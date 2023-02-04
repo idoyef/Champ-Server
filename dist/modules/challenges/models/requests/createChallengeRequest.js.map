@@ -1,0 +1,1 @@
+{"version":3,"file":"createChallengeRequest.js","sourceRoot":"","sources":["../../../../../src/modules/challenges/models/requests/createChallengeRequest.ts"],"names":[],"mappings":";;;AAGA,MAAa,sBAAsB;IASjC,YAAY,MAAmF;QAC7F,IAAI,MAAM,EAAE;YACV,MAAM,CAAC,MAAM,CAAC,IAAI,EAAE,MAAM,CAAC,CAAC;SAC7B;IACH,CAAC;CACF;AAdD,wDAcC"}
