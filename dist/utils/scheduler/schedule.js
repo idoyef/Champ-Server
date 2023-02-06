@@ -17,29 +17,29 @@ class Schedule {
     }
 }
 __decorate([
-    class_validator_1.IsString(),
-    class_validator_1.IsDefined()
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsDefined)()
 ], Schedule.prototype, "consumer", void 0);
 __decorate([
-    class_validator_1.IsEnum(scheduleType_1.ScheduleType),
-    class_validator_1.IsDefined()
+    (0, class_validator_1.IsEnum)(scheduleType_1.ScheduleType),
+    (0, class_validator_1.IsDefined)()
 ], Schedule.prototype, "type", void 0);
 __decorate([
-    class_validator_1.IsDate()
+    (0, class_validator_1.IsDate)()
 ], Schedule.prototype, "start", void 0);
 __decorate([
-    class_validator_1.ValidateIf((t) => t.type === scheduleType_1.ScheduleType.DateRangeWithInterval),
-    class_validator_1.IsOptional()
+    (0, class_validator_1.ValidateIf)((t) => t.type === scheduleType_1.ScheduleType.DateRangeWithInterval),
+    (0, class_validator_1.IsOptional)()
 ], Schedule.prototype, "end", void 0);
 __decorate([
-    class_validator_1.ValidateIf((t) => t.type !== scheduleType_1.ScheduleType.Once),
-    class_validator_1.IsOptional()
+    (0, class_validator_1.ValidateIf)((t) => t.type !== scheduleType_1.ScheduleType.Once),
+    (0, class_validator_1.IsOptional)()
 ], Schedule.prototype, "interval", void 0);
 __decorate([
-    class_validator_1.IsOptional()
+    (0, class_validator_1.IsOptional)()
 ], Schedule.prototype, "job", void 0);
 __decorate([
-    class_validator_1.IsOptional()
+    (0, class_validator_1.IsOptional)()
 ], Schedule.prototype, "jobInfo", void 0);
 exports.Schedule = Schedule;
 //# sourceMappingURL=schedule.js.map

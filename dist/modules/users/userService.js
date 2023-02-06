@@ -37,7 +37,7 @@ class UserService {
         return !!user;
     }
     async createUser(user) {
-        errorHandler_1.validate(user, sectionName);
+        (0, errorHandler_1.validate)(user, sectionName);
         const userToSave = this.populateUserToSave(user);
         return await this.userRepository.insert(userToSave);
     }
@@ -45,7 +45,7 @@ class UserService {
         return this.userRepository.findById(id);
     }
     async getUserWithQuery(query) {
-        errorHandler_1.validate(query, sectionName);
+        (0, errorHandler_1.validate)(query, sectionName);
         return this.userRepository.findManyWithQuery(query);
     }
     async validateUserUniqueness(signUpRequest) {

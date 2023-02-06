@@ -16,19 +16,19 @@ class UserQuery {
         }
     }
     validate() {
-        return errorHandler_1.validateModel(this);
+        return (0, errorHandler_1.validateModel)(this);
     }
 }
 __decorate([
-    class_validator_1.IsNotEmpty(),
-    class_validator_1.IsString(),
-    class_validator_1.IsOptional()
+    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)()
 ], UserQuery.prototype, "username", void 0);
 __decorate([
-    class_validator_1.IsNotEmpty(),
-    class_validator_1.IsString(),
-    class_validator_1.IsEmail(),
-    class_validator_1.IsOptional()
+    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsEmail)(),
+    (0, class_validator_1.IsOptional)()
 ], UserQuery.prototype, "email", void 0);
 exports.UserQuery = UserQuery;
 //# sourceMappingURL=userQuery.js.map

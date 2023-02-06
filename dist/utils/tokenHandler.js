@@ -5,7 +5,7 @@ const jsonwebtoken_1 = require("jsonwebtoken");
 const errorHandler_1 = require("./errorHandler");
 const generateToken = (payload) => {
     const jwtSecret = process.env.JWT_SECRET;
-    return jsonwebtoken_1.sign(payload, jwtSecret);
+    return (0, jsonwebtoken_1.sign)(payload, jwtSecret);
 };
 exports.generateToken = generateToken;
 const verifyToken = (req, res, next) => {
@@ -19,7 +19,7 @@ const verifyToken = (req, res, next) => {
     if (!token) {
         throw new errorHandler_1.UnauthorizedException(new errorHandler_1.ErrorReason('Invalid Token', 'Token is invalid'));
     }
-    jsonwebtoken_1.verify(token, jwtSecret, (err, payload) => {
+    (0, jsonwebtoken_1.verify)(token, jwtSecret, (err, payload) => {
         if (err) {
             throw new errorHandler_1.UnauthorizedException(new errorHandler_1.ErrorReason('Invalid Token', 'Token is invalid'));
         }

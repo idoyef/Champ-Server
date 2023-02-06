@@ -91,9 +91,9 @@ class TournamentService {
         switch (tournamentRequest.type) {
             case tournamentType_1.TournamentType.FirstToReachScore:
                 result.completionScore = tournamentRequest.completionScore;
-                return class_transformer_1.plainToClass(dbFirstToScoreTournament_1.DbFirstToScoreTournamentBase, result);
+                return (0, class_transformer_1.plainToClass)(dbFirstToScoreTournament_1.DbFirstToScoreTournamentBase, result);
             default:
-                return class_transformer_1.plainToClass(dbTournamentBase_1.DbTournamentBase, result);
+                return (0, class_transformer_1.plainToClass)(dbTournamentBase_1.DbTournamentBase, result);
         }
     }
     async populateTournamentMatchChallengesFromCreateRequest(matchChallenges) {

@@ -10,7 +10,7 @@ class BaseRepository {
     constructor(collectionName, schema) {
         this.collectionName = collectionName;
         this.schema = schema;
-        this.dbModel = mongoose_1.model(this.collectionName, this.schema);
+        this.dbModel = (0, mongoose_1.model)(this.collectionName, this.schema);
     }
     async insert(item) {
         return await this.dbModel
@@ -27,7 +27,7 @@ class BaseRepository {
         });
     }
     async insertMany(items) {
-        const dbModel = mongoose_1.model(this.collectionName, this.schema);
+        const dbModel = (0, mongoose_1.model)(this.collectionName, this.schema);
         return await dbModel
             .insertMany(items)
             .then((response) => response.map((x) => x.toObject()))
@@ -165,7 +165,7 @@ class BaseRepository {
         });
     }
     async replaceOneWithQuery(query, item) {
-        const dbModel = mongoose_1.model(this.collectionName, this.schema);
+        const dbModel = (0, mongoose_1.model)(this.collectionName, this.schema);
         return await dbModel
             .replaceOne(query, item)
             .then(async (response) => {

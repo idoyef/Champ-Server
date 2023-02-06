@@ -16,7 +16,7 @@ const disconnectDB = async () => {
     new mongooseDb_1.MongooseDb(dbUrl).disconnect();
 };
 connectDB();
-const app = app_1.initApp();
+const app = (0, app_1.initApp)();
 const server = app.listen(5000, () => {
     console.log('Server is listening on port: 5000');
 });

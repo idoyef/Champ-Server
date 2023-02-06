@@ -11,7 +11,7 @@ class MongooseDb {
     }
     async connect() {
         if (mongoose_1.default.connection.readyState === 0) {
-            this.mongo = await mongoose_1.default.connect(this.connectionString, { useNewUrlParser: true });
+            this.mongo = await mongoose_1.default.connect(this.connectionString);
         }
     }
     async disconnect() {

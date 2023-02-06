@@ -13,7 +13,7 @@ const authController = (authService) => {
     router.route('/forgotPassword').post(forgotPassword);
     async function login(req, res, next) {
         try {
-            const loginRequest = class_transformer_1.plainToClass(loginRequest_1.LoginRequest, req.body);
+            const loginRequest = (0, class_transformer_1.plainToClass)(loginRequest_1.LoginRequest, req.body);
             const result = await authService.login(loginRequest);
             return res.status(201).json(result);
         }

@@ -95,7 +95,7 @@ function validate(object, sectionName = '') {
 exports.validate = validate;
 function validateModel(object) {
     let errorsMessage = '';
-    const errors = class_validator_1.validateSync(object);
+    const errors = (0, class_validator_1.validateSync)(object);
     if (errors.length > 0) {
         const constraints = errors.map((x) => x.constraints);
         for (const errors of constraints) {

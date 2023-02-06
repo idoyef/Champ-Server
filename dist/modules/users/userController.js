@@ -17,7 +17,7 @@ const userController = (usersService) => {
     router.route('/:id').get(getUser);
     async function signUp(req, res, next) {
         try {
-            const signUpRequest = class_transformer_1.plainToClass(signUpRequest_1.SignUpRequest, req.body);
+            const signUpRequest = (0, class_transformer_1.plainToClass)(signUpRequest_1.SignUpRequest, req.body);
             const result = await usersService.signUp(signUpRequest);
             return res.status(201).json(result);
         }
@@ -50,8 +50,8 @@ const userController = (usersService) => {
                 result = await usersService.getUserById(req.params.id);
             }
             else {
-                class_transformer_1.plainToClass(userQuery_1.UserQuery, req.params);
-                result = await usersService.getUserWithQuery(class_transformer_1.plainToClass(userQuery_1.UserQuery, req.params));
+                (0, class_transformer_1.plainToClass)(userQuery_1.UserQuery, req.params);
+                result = await usersService.getUserWithQuery((0, class_transformer_1.plainToClass)(userQuery_1.UserQuery, req.params));
             }
             return res.json(result);
         }

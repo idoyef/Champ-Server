@@ -87,11 +87,11 @@ class ApiFootballProvider {
     }
     getDates(startDate, stopDate) {
         var dateArray = [];
-        var currentDate = moment_1.default(startDate);
-        var endDate = moment_1.default(stopDate);
+        var currentDate = (0, moment_1.default)(startDate);
+        var endDate = (0, moment_1.default)(stopDate);
         while (currentDate <= endDate) {
-            dateArray.push(moment_1.default(currentDate).format('YYYY-MM-DD'));
-            currentDate = moment_1.default(currentDate).add(1, 'days');
+            dateArray.push((0, moment_1.default)(currentDate).format('YYYY-MM-DD'));
+            currentDate = (0, moment_1.default)(currentDate).add(1, 'days');
         }
         return dateArray;
     }

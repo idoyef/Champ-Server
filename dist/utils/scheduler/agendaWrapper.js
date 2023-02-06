@@ -50,7 +50,7 @@ class AgendaWrapper {
     }
     async executeJob(job) {
         var _a, _b;
-        const scheduleData = class_transformer_1.plainToClass(schedule_1.Schedule, job.attrs.data);
+        const scheduleData = (0, class_transformer_1.plainToClass)(schedule_1.Schedule, job.attrs.data);
         switch (scheduleData.type) {
             case scheduleType_1.ScheduleType.Once:
                 await this.consumerCallbacks[scheduleData.consumer](job);

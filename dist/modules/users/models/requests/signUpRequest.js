@@ -16,21 +16,21 @@ class SignUpRequest {
         }
     }
     validate() {
-        return errorHandler_1.validateModel(this);
+        return (0, errorHandler_1.validateModel)(this);
     }
 }
 __decorate([
-    class_validator_1.IsNotEmpty(),
-    class_validator_1.IsString()
+    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsString)()
 ], SignUpRequest.prototype, "username", void 0);
 __decorate([
-    class_validator_1.IsNotEmpty(),
-    class_validator_1.IsString(),
-    class_validator_1.IsEmail()
+    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsEmail)()
 ], SignUpRequest.prototype, "email", void 0);
 __decorate([
-    class_validator_1.IsNotEmpty(),
-    class_validator_1.IsString()
+    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsString)()
 ], SignUpRequest.prototype, "password", void 0);
 exports.SignUpRequest = SignUpRequest;
 //# sourceMappingURL=signUpRequest.js.map

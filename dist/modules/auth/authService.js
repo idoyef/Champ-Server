@@ -24,7 +24,7 @@ class AuthService {
             password: encryptedPassword,
         });
         await this.authRepository.insert(credentials);
-        const token = tokenHandler_1.generateToken({
+        const token = (0, tokenHandler_1.generateToken)({
             userId: user._id,
             username: credentials.username,
             email: credentials.email,
@@ -32,7 +32,7 @@ class AuthService {
         return token;
     }
     async login(loginRequest) {
-        const credentialsQuery = mongooseHelper_1.toMongooseQuery({
+        const credentialsQuery = (0, mongooseHelper_1.toMongooseQuery)({
             username: loginRequest.username,
             email: loginRequest.email,
         }, mongooseOperator_1.MongooseOperator.Or);
@@ -45,7 +45,7 @@ class AuthService {
             throw new errorHandler_1.UnauthorizedException(new errorHandler_1.ErrorReason('Unauthorized', 'username/password incorrect'));
         }
         const { _id: id, username, email } = dbCredentials;
-        return tokenHandler_1.generateToken({ id, username, email });
+        return (0, tokenHandler_1.generateToken)({ id, username, email });
     }
     async forgotPassword() { }
 }

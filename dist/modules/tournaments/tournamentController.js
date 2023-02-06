@@ -19,7 +19,7 @@ const tournamentController = (tournamentService) => {
     router.route('/:id').get(getTournament);
     async function createTournament(req, res, next) {
         try {
-            const tournament = class_transformer_1.plainToClass(createTournamentRequest_1.CreateTournamentRequest, req.body);
+            const tournament = (0, class_transformer_1.plainToClass)(createTournamentRequest_1.CreateTournamentRequest, req.body);
             const result = await tournamentService.createTournament(tournament);
             return res.status(201).json(result);
         }
@@ -34,8 +34,8 @@ const tournamentController = (tournamentService) => {
                 result = await tournamentService.getTournamentById(req.params.id);
             }
             else {
-                class_transformer_1.plainToClass(tournamentQuery_1.TournamentQuery, req.params);
-                result = Object.assign({}, await tournamentService.getTournamentWithQuery(class_transformer_1.plainToClass(tournamentQuery_1.TournamentQuery, req.params)));
+                (0, class_transformer_1.plainToClass)(tournamentQuery_1.TournamentQuery, req.params);
+                result = Object.assign({}, await tournamentService.getTournamentWithQuery((0, class_transformer_1.plainToClass)(tournamentQuery_1.TournamentQuery, req.params)));
             }
             return res.json(result);
         }
@@ -47,7 +47,7 @@ const tournamentController = (tournamentService) => {
         try {
             let result = {};
             if (req.params.id) {
-                const tournament = class_transformer_1.plainToClass(updateTournamentRequest_1.UpdateTournamentRequest, req.body);
+                const tournament = (0, class_transformer_1.plainToClass)(updateTournamentRequest_1.UpdateTournamentRequest, req.body);
                 result = await tournamentService.updateTournamentById(tournament);
             }
             return res.json(result);

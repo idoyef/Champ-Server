@@ -16,17 +16,17 @@ class CreateUserRequest {
         }
     }
     validate() {
-        return errorHandler_1.validateModel(this);
+        return (0, errorHandler_1.validateModel)(this);
     }
 }
 __decorate([
-    class_validator_1.IsNotEmpty(),
-    class_validator_1.IsString()
+    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsString)()
 ], CreateUserRequest.prototype, "username", void 0);
 __decorate([
-    class_validator_1.IsNotEmpty(),
-    class_validator_1.IsString(),
-    class_validator_1.IsEmail()
+    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsEmail)()
 ], CreateUserRequest.prototype, "email", void 0);
 exports.CreateUserRequest = CreateUserRequest;
 //# sourceMappingURL=createUserRequest.js.map

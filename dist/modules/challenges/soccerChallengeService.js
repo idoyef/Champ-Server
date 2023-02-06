@@ -37,7 +37,7 @@ class SoccerChallengeService {
             default:
                 break;
         }
-        return class_transformer_1.plainToClass(dbChallenge_1.DbChallenge, challenge);
+        return (0, class_transformer_1.plainToClass)(dbChallenge_1.DbChallenge, challenge);
     }
 }
 exports.SoccerChallengeService = SoccerChallengeService;

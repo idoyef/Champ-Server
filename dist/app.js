@@ -40,43 +40,43 @@ const initApp = () => {
         origin: '*',
         optionSuccessStatus: 200,
     };
-    const app = express_1.default();
-    app.use(cors_1.default(options)).use(body_parser_1.default.json());
+    const app = (0, express_1.default)();
+    app.use((0, cors_1.default)(options)).use(body_parser_1.default.json());
     const scheduler = new agendaWrapper_1.AgendaWrapper();
     const apiWrapper = new apiWrapper_1.ApiWrapper();
     const authRepository = new authRepository_1.AuthRepository();
     const authService = new authService_1.AuthService(authRepository);
-    app.use(`/${apiRoute_1.ApiRoute.Auth}`, authController_1.authController(authService));
+    app.use(`/${apiRoute_1.ApiRoute.Auth}`, (0, authController_1.authController)(authService));
     const userRepository = new userRepository_1.UserRepository();
     const userService = new userService_1.UserService(authService, userRepository);
-    app.use(`/${apiRoute_1.ApiRoute.Users}`, /*verifyToken,*/ userController_1.userController(userService));
+    app.use(`/${apiRoute_1.ApiRoute.Users}`, /*verifyToken,*/ (0, userController_1.userController)(userService));
     const metadataRepository = new metadataRepository_1.MetadataRepository();
     const metadataService = new metadataService_1.MetadataService(metadataRepository);
     const matchRepository = new matchRepository_1.MatchRepository();
     const matchService = new matchService_1.MatchService(matchRepository);
     // for debugging purposes, consider removing in the future
-    app.use(`/${apiRoute_1.ApiRoute.Matches}`, matchController_1.matchController(matchService));
+    app.use(`/${apiRoute_1.ApiRoute.Matches}`, (0, matchController_1.matchController)(matchService));
     const challengeRepository = new challengeRepository_1.ChallengeRepository();
     const challengeService = new challengeService_1.ChallengeService(challengeRepository, new soccerChallengeService_1.SoccerChallengeService(), new basketballChallengeService_1.BasketballChallengeService());
     const matchChallengeRepository = new matchChallengeRepository_1.MatchChallengeRepository();
     const matchChallengeService = new matchChallengeService_1.MatchChallengeService(matchChallengeRepository, challengeService);
     const tournamentRepository = new tournamentRepository_1.TournamentRepository();
     const tournamentService = new tournamentService_1.TournamentService(tournamentRepository, matchService, matchChallengeService, challengeService);
-    app.use(`/${apiRoute_1.ApiRoute.Tournaments}`, tournamentController_1.tournamentController(tournamentService));
+    app.use(`/${apiRoute_1.ApiRoute.Tournaments}`, (0, tournamentController_1.tournamentController)(tournamentService));
     const dataSourceProvider = new apiFootballProvider_1.ApiFootballProvider(apiWrapper);
     const soccerRepository = new soccerRepository_1.SoccerRepository();
     const soccerService = new soccerService_1.SoccerService(dataSourceProvider, soccerRepository, matchService, scheduler);
-    app.use(`/${apiRoute_1.ApiRoute.Soccer}`, soccerController_1.soccerController(soccerService));
+    app.use(`/${apiRoute_1.ApiRoute.Soccer}`, (0, soccerController_1.soccerController)(soccerService));
     process.on('uncaughtException', (error) => {
-        errorHandler_1.handleError(error);
+        (0, errorHandler_1.handleError)(error);
     });
     process.on('unhandledRejection', (error) => {
-        errorHandler_1.handleError(error);
+        (0, errorHandler_1.handleError)(error);
     });
     process.on('SIGTERM', scheduler.stop);
     process.on('SIGINT', scheduler.stop);
     app.use((error, req, res, next) => {
-        const result = errorHandler_1.handleError(error);
+        const result = (0, errorHandler_1.handleError)(error);
         res.status(result.httpStatus).json(result);
     });
     return app;

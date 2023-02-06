@@ -17,7 +17,7 @@ const matchController = (matchService) => {
     async function createMatch(req, res, next) {
         try {
             const matchId = new bson_1.ObjectID().toString();
-            const match = class_transformer_1.plainToClass(createMatchRequest_1.CreateMatchRequest, Object.assign(Object.assign({}, req.body), { matchId }));
+            const match = (0, class_transformer_1.plainToClass)(createMatchRequest_1.CreateMatchRequest, Object.assign(Object.assign({}, req.body), { matchId }));
             const result = await matchService.createMatch(match);
             return res.status(201).json(result);
         }
@@ -32,8 +32,8 @@ const matchController = (matchService) => {
                 result = await matchService.getMatchById(req.params.id);
             }
             else {
-                class_transformer_1.plainToClass(matchQuery_1.MatchQuery, req.params);
-                result = Object.assign({}, await matchService.getMatchWithQuery(class_transformer_1.plainToClass(matchQuery_1.MatchQuery, req.params)));
+                (0, class_transformer_1.plainToClass)(matchQuery_1.MatchQuery, req.params);
+                result = Object.assign({}, await matchService.getMatchWithQuery((0, class_transformer_1.plainToClass)(matchQuery_1.MatchQuery, req.params)));
             }
             return res.json(result);
         }

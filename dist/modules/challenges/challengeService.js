@@ -31,7 +31,7 @@ class ChallengeService {
             case sportType_1.SportType.Soccer:
                 const result = this.soccerChallengeService.calculateMatchChallengeScoreResult(dbChallenge, event);
                 const updatedChallenge = await this.challengeRepository.updateWithSetById(dbChallenge._id, result);
-                return class_transformer_1.plainToClass(dbChallenge_1.DbChallenge, updatedChallenge);
+                return (0, class_transformer_1.plainToClass)(dbChallenge_1.DbChallenge, updatedChallenge);
             default:
                 return dbChallenge;
         }

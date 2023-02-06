@@ -151,7 +151,7 @@ class SoccerService {
         const jobs = await this.scheduler.getScheduleWithQuery(new scheduleQuery_1.ScheduleQuery({ jobName: soccerFutureMatchesJob }));
         if (jobs.length === 0) {
             await this.handleSoccerFutureMatches();
-            const nextSchedule = dateHelper_1.addDays(new Date(), 1);
+            const nextSchedule = (0, dateHelper_1.addDays)(new Date(), 1);
             nextSchedule.setHours(6, 0, 0);
             const schedule = new schedule_1.Schedule({
                 consumer: soccerFutureMatchesConsumer,
@@ -172,7 +172,7 @@ class SoccerService {
             console.log();
         }
         let triggeredEvents = [];
-        const result = class_transformer_1.plainToClass(soccerMatch_1.SoccerMatch, currentMatchState);
+        const result = (0, class_transformer_1.plainToClass)(soccerMatch_1.SoccerMatch, currentMatchState);
         const mergedEvents = this.handleNewMatchEvents(previousMatchState.events, currentMatchState.events);
         triggeredEvents = triggeredEvents.concat(mergedEvents.triggeredEvents);
         if (previousMatchState.status !== currentMatchState.status) {
