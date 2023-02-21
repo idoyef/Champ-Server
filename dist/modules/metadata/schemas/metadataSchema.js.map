@@ -1,1 +1,0 @@
-{"version":3,"file":"metadataSchema.js","sourceRoot":"","sources":["../../../../src/modules/metadata/schemas/metadataSchema.ts"],"names":[],"mappings":";;;AAAA,uCAAkC;AAErB,QAAA,cAAc,GAAG,IAAI,iBAAM,CAAC;IACvC,OAAO,EAAE,EAAE,IAAI,EAAE,MAAM,EAAE,QAAQ,EAAE,IAAI,EAAE;IACzC,eAAe,EAAE,EAAE,IAAI,EAAE,MAAM,EAAE,QAAQ,EAAE,IAAI,EAAE;CAClD,CAAC,CAAC"}

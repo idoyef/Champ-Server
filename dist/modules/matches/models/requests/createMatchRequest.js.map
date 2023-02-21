@@ -1,1 +1,0 @@
-{"version":3,"file":"createMatchRequest.js","sourceRoot":"","sources":["../../../../../src/modules/matches/models/requests/createMatchRequest.ts"],"names":[],"mappings":";;;AAGA,MAAa,kBAAkB;IAO7B,YAAY,MAKX;QACC,IAAI,MAAM,EAAE;YACV,MAAM,CAAC,MAAM,CAAC,IAAI,EAAE,MAAM,CAAC,CAAC;SAC7B;IACH,CAAC;CACF;AAjBD,gDAiBC"}

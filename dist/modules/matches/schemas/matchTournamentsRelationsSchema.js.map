@@ -1,1 +1,0 @@
-{"version":3,"file":"matchTournamentsRelationsSchema.js","sourceRoot":"","sources":["../../../../src/modules/matches/schemas/matchTournamentsRelationsSchema.ts"],"names":[],"mappings":";;;AAAA,uCAAkC;AAErB,QAAA,+BAA+B,GAAG,IAAI,iBAAM,CAAC;IACxD,OAAO,EAAE,EAAE,IAAI,EAAE,MAAM,EAAE;IACzB,aAAa,EAAE,EAAE,IAAI,EAAE,CAAC,MAAM,CAAC,EAAE;CAClC,CAAC,CAAC"}

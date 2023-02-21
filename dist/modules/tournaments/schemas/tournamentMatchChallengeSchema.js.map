@@ -1,1 +1,0 @@
-{"version":3,"file":"tournamentMatchChallengeSchema.js","sourceRoot":"","sources":["../../../../src/modules/tournaments/schemas/tournamentMatchChallengeSchema.ts"],"names":[],"mappings":";;;AAAA,uCAAkC;AAErB,QAAA,8BAA8B,GAAG,IAAI,iBAAM,CACtD;IACE,OAAO,EAAE,EAAE,IAAI,EAAE,MAAM,EAAE;IACzB,gBAAgB,EAAE,EAAE,IAAI,EAAE,MAAM,EAAE;CACnC,EACD,EAAE,GAAG,EAAE,KAAK,EAAE,CACf,CAAC"}

@@ -1,1 +1,0 @@
-{"version":3,"file":"createMatchChallengeRequest.js","sourceRoot":"","sources":["../../../../../src/modules/matchChallenges/models/requests/createMatchChallengeRequest.ts"],"names":[],"mappings":";;;AAGA,MAAa,2BAA2B;IAKtC,YAAY,MAIX;QACC,IAAI,MAAM,EAAE;YACV,MAAM,CAAC,MAAM,CAAC,IAAI,EAAE,MAAM,CAAC,CAAC;SAC7B;IACH,CAAC;CACF;AAdD,kEAcC"}

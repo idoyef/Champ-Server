@@ -1,1 +1,0 @@
-{"version":3,"file":"participantsScore.js","sourceRoot":"","sources":["../../../../src/modules/tournaments/models/participantsScore.ts"],"names":[],"mappings":";;;AAAA,MAAa,iBAAiB;IAE5B,mBAAmB;IACnB,qBAAqB;IAErB,YAAY,MAAkC;QAC5C,IAAI,MAAM,EAAE;YACV,MAAM,CAAC,MAAM,CAAC,IAAI,EAAE,MAAM,CAAC,CAAC;SAC7B;IACH,CAAC;CACF;AAVD,8CAUC"}
