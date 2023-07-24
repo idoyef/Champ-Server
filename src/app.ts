@@ -26,6 +26,8 @@ import { AuthRepository } from './modules/auth/authRepository';
 import { userController } from './modules/users/userController';
 import { authController } from './modules/auth/authController';
 import { handleError } from './utils/errorHandler';
+import { CoinRepository } from './modules/coins/coinRepository';
+import { CoinService } from './modules/coins/coinService';
 
 export const initApp = () => {
   const options = {
@@ -38,11 +40,17 @@ export const initApp = () => {
   const apiWrapper = new ApiWrapper();
   const eventHandler = new EventHandler();
 
+  // auth & user
   const authRepository = new AuthRepository();
   const authService = new AuthService(authRepository);
   const userRepository = new UserRepository();
   const userService = new UserService(authService, userRepository);
 
+  // coins
+  const coinRepository = new CoinRepository();
+  new CoinService(coinRepository, eventHandler)
+
+  // challenge & challengeMatch
   const challengeRepository = new ChallengeRepository();
   const matchChallengeRepository = new MatchChallengesRepository();
   const matchRepository = new MatchRepository();
@@ -53,6 +61,7 @@ export const initApp = () => {
     eventHandler
   );
 
+  // tournament
   const tournamentRepository = new TournamentRepository();
   const tournamentService = new TournamentService(
     tournamentRepository,
@@ -60,6 +69,7 @@ export const initApp = () => {
     eventHandler
   );
 
+  // soccer provider & soccer match
   const soccerProviderMock = new ApiSoccerProviderMock();
   const soccerMatchRepository = new SoccerMatchRepository();
   const soccerIdMatchIdMappingRepository =
