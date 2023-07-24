@@ -8,7 +8,8 @@ import { DbTournament } from './models/db/dbTournamentBase';
 import { FirstToScoreTournament, Tournament } from './models/tournament';
 import { MatchStatus } from '../matches/enums/matchStatus';
 import { CreateMatchChallengeRequest } from '../matches/models/requests/createMatchChallengeRequest';
-import { EventHandler } from '../../common/events/eventhandler';
+import { EventHandler } from '../../common/events/eventHandler';
+import { ParticipantsScore } from './models/participantsScore';
 
 export class TournamentService {
   constructor(
@@ -109,16 +110,77 @@ export class TournamentService {
   }
 
   private async handleMatchFinished(payload: any) {
-    const { tournamentId, matchId } = payload;
+    const { tournamentId, matchId, participantsScore } = payload;
+    console.log('~~~TOURNAMENT_MATCH_FINISHED handler', {
+      tournamentId,
+      matchId,
+      participantsScore,
+    });
+    let allMatchesResolved = true;
 
     const tournament = await this.tournamentRepository.findById(tournamentId);
     const updatedMatches = tournament.matches.map((match) => {
-      return match.matchId === matchId ? { matchId, isResolved: true } : match;
+      const result =
+        match.matchId === matchId ? { matchId, isResolved: true } : match;
+      if (!result.isResolved) allMatchesResolved = false;
+
+      return result;
+    });
+
+    const winnersIds = this.handleTournamentFinished(
+      tournament,
+      allMatchesResolved,
+      participantsScore
+    );
+    console.log('~~~TOURNAMENT_MATCH_FINISHED winners', {
+      winnersIds,
     });
 
     await this.tournamentRepository.updateById(tournamentId, {
       ...tournament,
       matches: updatedMatches,
+      ...(winnersIds?.length && { winnersIds }),
     });
+  }
+
+  private handleTournamentFinished(
+    tournament: Tournament,
+    allMatchesResolved: boolean,
+    participantsScore: ParticipantsScore
+  ): string[] | undefined {
+    const { highestScore, winners } =
+      this.calculateHighestScore(participantsScore);
+
+    switch (tournament.type) {
+      case TournamentType.Fixed:
+      case TournamentType.SingleMatch:
+        return winners;
+      case TournamentType.FirstToReachScore:
+        const { completionScore } = tournament as FirstToScoreTournament;
+        if (highestScore >= completionScore || allMatchesResolved) {
+          return winners;
+        }
+        return undefined;
+      default:
+        break;
+    }
+  }
+
+  private calculateHighestScore(participantsScore: ParticipantsScore): {
+    highestScore: number;
+    winners: string[];
+  } {
+    let winners: string[] = [];
+    let highestScore = 0;
+
+    for (const participantId in participantsScore) {
+      if (highestScore === participantsScore[participantId]) {
+        winners.push(participantId);
+      } else if (participantsScore[participantId] > highestScore) {
+        highestScore = participantsScore[participantId];
+        winners = [participantId];
+      }
+    }
+    return { highestScore, winners };
   }
 }

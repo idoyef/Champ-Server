@@ -5,9 +5,8 @@ export const matchSchema = new Schema({
   status: { type: String },
   tournamentIds: { type: [String] },
   matchId: { type: String },
+  participantScore: { type: Object },
   challengesResolved: { type: Boolean },
-  // matchEntity: { type: Object },
-  // triggeredEvents: { type: [Object] },
 })
   .set('timestamps', true)
   .set('toObject', { virtuals: true });

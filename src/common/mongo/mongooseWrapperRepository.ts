@@ -35,11 +35,11 @@ export class BaseRepository<T> implements IBaseRepository<T> {
     return this.dbModel
       .findById(id)
       .then((entity: any) => {
-        console.log('~~~findById', {
-          entity,
-          toJson: entity?.toJSON(),
-          toObject: entity?.toObject(),
-        });
+        // console.log('~~~findById', {
+        //   entity,
+        //   toJson: entity?.toJSON(),
+        //   toObject: entity?.toObject(),
+        // });
 
         return entity?.toObject();
       })
@@ -53,11 +53,11 @@ export class BaseRepository<T> implements IBaseRepository<T> {
     return this.dbModel
       .findOne(query)
       .then((entity: any) => {
-        console.log('~~~findOneWithQuery', {
-          entity,
-          toJson: entity?.toJSON(),
-          toObject: entity?.toObject(),
-        });
+        // console.log('~~~findOneWithQuery', {
+        //   entity,
+        //   toJson: entity?.toJSON(),
+        //   toObject: entity?.toObject(),
+        // });
         return entity?.toObject();
       })
       .catch((error: any) => {
@@ -70,11 +70,11 @@ export class BaseRepository<T> implements IBaseRepository<T> {
     return this.dbModel
       .find(query)
       .then((entities: any) => {
-        console.log('~~~findManyWithQuery', {
-          entities,
-          toJson: entities?.map((entity: any) => entity.toJSON()),
-          toObject: entities?.map((entity: any) => entity.toObject()),
-        });
+        // console.log('~~~findManyWithQuery', {
+        //   entities,
+        //   toJson: entities?.map((entity: any) => entity.toJSON()),
+        //   toObject: entities?.map((entity: any) => entity.toObject()),
+        // });
 
         return entities?.map((entity: any) => entity.toObject());
       })

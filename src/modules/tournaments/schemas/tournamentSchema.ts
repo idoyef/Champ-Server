@@ -11,7 +11,7 @@ export const tournamentSchema = new Schema({
   matches: { type: [tournamentMatch] },
   participantIds: { type: [String] },
   status: { type: String },
-  winnerId: { type: String },
+  winnerIds: { type: [String] },
   completionScore: { type: Number, default: undefined },
 })
   .set('timestamps', true)

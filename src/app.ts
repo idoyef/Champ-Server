@@ -15,7 +15,7 @@ import { SportApiGateway } from './modules/sports/sportApiGateway/sportApiGatewa
 import { MatchChallengesRepository } from './modules/matches/matchChallengeRepository';
 import { ChallengeRepository } from './modules/matches/challengeRepository';
 import { SoccerIdMatchIdMappingRepository } from './modules/sports/soccer/soccerIdMatchIdMappingRepository';
-import { EventHandler } from './common/events/eventhandler';
+import { EventHandler } from './common/events/eventHandler';
 import { matchController } from './modules/matches/matchController';
 import { clearIntervals, clearTimeouts } from './utils';
 import { soccerController } from './modules/sports/soccer/soccerController';
@@ -48,7 +48,7 @@ export const initApp = () => {
 
   // coins
   const coinRepository = new CoinRepository();
-  new CoinService(coinRepository, eventHandler)
+  new CoinService(coinRepository, eventHandler);
 
   // challenge & challengeMatch
   const challengeRepository = new ChallengeRepository();

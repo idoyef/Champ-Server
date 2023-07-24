@@ -6,17 +6,19 @@ import { MatchChallengesRepository } from './matchChallengeRepository';
 import { ChallengeRepository } from './challengeRepository';
 import { CreateMatchChallengeRequest } from './models/requests/createMatchChallengeRequest';
 import { MatchChallengeStatus } from './enums/MatchChallengeStatus';
-import { EventHandler } from '../../common/events/eventhandler';
+import { EventHandler } from '../../common/events/eventHandler';
 import { Challenge, DbChallenge } from './models/database/dbChallenge';
 import { ChallengeStatus } from './enums/ChallengeStatus';
 import { handlersMapping } from './challengeHandler';
 import { MatchStatus } from './enums/matchStatus';
+import { DbMatch } from './models/database/dbMatch';
+import { ParticipantsScore } from '../tournaments/models/participantsScore';
 
 export class MatchService {
   constructor(
     private matchRepository: MatchRepository,
     private matchChallengeRepository: MatchChallengesRepository,
-    private challengeRepository: ChallengeRepository, // private matchChallengeService: MatchChallengeService
+    private challengeRepository: ChallengeRepository,
     private eventHandler: EventHandler
   ) {
     this.eventHandler.on('matchTriggers', async (payload) => {
@@ -67,7 +69,7 @@ export class MatchService {
     return await Promise.all(matchChallengePromises);
   }
 
-  async getMatchById(id: string) {
+  async getMatchById(id: string): Promise<DbMatch> {
     return await this.matchRepository.findById(id);
   }
 
@@ -99,10 +101,7 @@ export class MatchService {
 
   private async handleMatchTriggers(payload: any) {
     const { matchId, matchStatus, matchTrigger } = payload;
-    if (matchStatus === MatchStatus.Finished) {
-      // for test, remove
-      console.log('');
-    }
+
     const tournamentIdToMatchIdsMap = new Map<string, string[]>();
     const tournamentIdToMatchesResolved = new Map<string, boolean>();
 
@@ -123,12 +122,13 @@ export class MatchService {
         tournamentIdToMatchIdsMap.set(tournamentId, matchIds);
       }
 
-      const challengesResolved = await this.handleChallenges(
-        matchId,
-        matchStatus,
-        challengesIds,
-        matchTrigger
-      );
+      const { challengesResolved, participantsScore } =
+        await this.handleChallenges(
+          matchId,
+          matchStatus,
+          challengesIds,
+          matchTrigger
+        );
 
       await this.upsertMatchWithQuery(
         { matchId },
@@ -139,8 +139,11 @@ export class MatchService {
       );
 
       if (isMatchFinish && challengesResolved) {
-        console.log('~~~TOURNAMENT_MATCH_FINISHED', { matchId });
-        this.eventHandler.emit('TOURNAMENT_MATCH_FINISHED', { matchId });
+        this.eventHandler.emit('TOURNAMENT_MATCH_FINISHED', {
+          tournamentId,
+          matchId,
+          participantsScore,
+        });
       }
     });
   }
@@ -150,8 +153,12 @@ export class MatchService {
     matchStatus: MatchStatus,
     challengeIds: string[],
     matchTriggers: any
-  ): Promise<boolean> {
+  ): Promise<{
+    challengesResolved: boolean;
+    participantsScore: ParticipantsScore;
+  }> {
     let challengesResolved = true;
+    let participantsScore: ParticipantsScore = {};
 
     for (const challengesId of challengeIds) {
       const challenge = await this.challengeRepository.findById(challengesId);
@@ -162,12 +169,24 @@ export class MatchService {
         challenge,
         matchTriggers
       );
+
+      for (const participantId in handledChallenge.challengeParticipantsScore) {
+        if (participantsScore[participantId]) {
+          participantsScore[participantId] =
+            participantsScore[participantId] +
+            handledChallenge.challengeParticipantsScore[participantId];
+        } else {
+          participantsScore[participantId] =
+            handledChallenge.challengeParticipantsScore[participantId];
+        }
+      }
+
       if (handledChallenge.status !== ChallengeStatus.Finished) {
         challengesResolved = false;
       }
     }
 
-    return challengesResolved;
+    return { challengesResolved, participantsScore };
   }
 
   private async handleChallenge(

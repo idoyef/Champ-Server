@@ -4,7 +4,7 @@ import { SoccerFixtureStatusShort } from './enums/soccerStatus';
 import { SoccerMatch } from './models/soccerMatch';
 import { SoccerMatchRepository } from './soccerRepository';
 import { SoccerIdMatchIdMappingRepository } from './soccerIdMatchIdMappingRepository';
-import { EventHandler } from '../../../common/events/eventhandler';
+import { EventHandler } from '../../../common/events/eventHandler';
 import {
   MatchTrigger,
   SoccerMatchTrigger,
@@ -30,14 +30,14 @@ export class SoccerService implements SportService<SoccerMatch> {
     private soccerIdMatchIdMappingRepository: SoccerIdMatchIdMappingRepository,
     private eventHandler: EventHandler
   ) {
-    // this.getStartedMatches();
-    // setTimeoutWrapper(
-    //   () =>
-    //     setIntervalWrapper(() => {
-    //       this.getStartedMatches();
-    //     }, 2000),
-    //   20000
-    // );
+    this.getStartedMatches();
+    setTimeoutWrapper(
+      () =>
+        setIntervalWrapper(() => {
+          this.getStartedMatches();
+        }, 2000),
+      30000
+    );
     // initialize scheduler for getting matches from dataProvider
   }
 
@@ -166,7 +166,6 @@ export class SoccerService implements SportService<SoccerMatch> {
   ) {
     this.eventHandler.emit('matchTriggers', {
       matchId,
-      // matchId: '6054f9c6782a180b5c0a5a80',
       matchStatus,
       matchTrigger,
     }); // TBD - send to matchTriggers sportEvents queue

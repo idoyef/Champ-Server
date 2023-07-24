@@ -1,8 +1,6 @@
 import { SportType } from '../../../common/enums/sportType';
+import { ParticipantsScore } from '../../tournaments/models/participantsScore';
 import { MatchStatus } from '../enums/matchStatus';
-// import { SoccerMatch } from './SoccerMatch';
-
-// export type Match = SoccerMatch;
 
 export interface Match {
   type: SportType;
@@ -10,6 +8,5 @@ export interface Match {
   tournamentIds: string[];
   matchId: string;
   challengesResolved: boolean;
-  // matchEntity: Object;
-  // triggeredEvents: TriggeredEvent[];
+  participantScore: ParticipantsScore;
 }
