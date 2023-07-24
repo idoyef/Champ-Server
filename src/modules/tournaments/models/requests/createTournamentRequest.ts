@@ -1,20 +1,10 @@
-import { TournamentType } from '../../enums/tournamentType';
-import { CreateMatchChallengeRequest } from '../../../matchChallenges/models/requests/createMatchChallengeRequest';
+import { CreateMatchChallengeRequest } from '../../../matches/models/requests/createMatchChallengeRequest';
+import { TournamentType } from '../../enums/TournamentType';
 
-export class CreateTournamentRequest {
-  type!: TournamentType;
-  participantIds!: string[];
-  matchChallenges!: CreateMatchChallengeRequest[];
+export interface CreateTournamentRequest {
+  type: TournamentType;
+  participantIds: string[];
+  matchChallenges: CreateMatchChallengeRequest[];
   completionScore?: number;
-
-  constructor(fields?: {
-    type: TournamentType;
-    participantIds: string[];
-    matchChallenges: CreateMatchChallengeRequest[];
-    completionScore?: number;
-  }) {
-    if (fields) {
-      Object.assign(this, fields);
-    }
-  }
+  bet: number;
 }

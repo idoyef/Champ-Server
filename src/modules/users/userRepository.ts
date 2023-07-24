@@ -1,5 +1,5 @@
 import { BaseRepository } from '../../common/mongo/mongooseWrapperRepository';
-import { DbUser } from './models/dbUser';
+import { DbUser } from './models/db/dbUserBase';
 import { usersSchema } from './schemas/usersSchema';
 
 export class UserRepository extends BaseRepository<DbUser> {

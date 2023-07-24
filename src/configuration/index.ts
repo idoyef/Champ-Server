@@ -3,17 +3,3 @@ export const generalConfig = {
   defaultPageNumber: 1,
   defaultPageSize: 100,
 };
-
-export const schedulerConfig = {
-  processEvery: '2 seconds',
-  priority: 'normal',
-};
-
-export const matchConfig = {
-  dayToUpdate: 7,
-};
-
-export const soccerConfig = {
-  leaguesIds: ['673'],
-  defaultNextFutureMatchesAmount: 10,
-};

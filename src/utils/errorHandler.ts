@@ -1,4 +1,3 @@
-import { validateSync } from 'class-validator';
 import {
   UNAUTHORIZED,
   SERVICE_UNAVAILABLE,
@@ -6,7 +5,6 @@ import {
   BAD_REQUEST,
   INTERNAL_SERVER_ERROR,
 } from 'http-status-codes';
-import { IValidate } from '../interfaces/IValidate';
 
 export class ErrorBase extends Error {
   constructor(
@@ -120,39 +118,5 @@ export function handleError(error: any) {
     errorReasons:
       error.errorReasons ||
       new ErrorReason('ServerError', `Server Error - ${error.message}`),
-  };
-}
-
-export function validate(object: IValidate, sectionName: string = '') {
-  const validationResult = object.validate();
-  if (!validationResult.isValid) {
-    throw new InputValidationException(
-      sectionName,
-      new ErrorReason('input validation', validationResult.errorsMessage)
-    );
-  }
-}
-
-export function validateModel(object: IValidate) {
-  let errorsMessage = '';
-  const errors = validateSync(object);
-
-  if (errors.length > 0) {
-    const constraints = errors.map((x) => x.constraints);
-    for (const errors of constraints) {
-      for (const key in errors) {
-        if (Object.prototype.hasOwnProperty.call(errors, key)) {
-          if (errorsMessage !== '') {
-            errorsMessage += ', ';
-          }
-          errorsMessage += errors[key];
-        }
-      }
-    }
-  }
-
-  return {
-    errorsMessage,
-    isValid: errors.length === 0,
   };
 }

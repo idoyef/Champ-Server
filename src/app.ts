@@ -1,35 +1,31 @@
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
+import { ApiWrapper } from './utils/apiWrapper';
+import { tournamentController } from './modules/tournaments/tournamentController';
+import { ApiRoute } from './common/enums/apiRoute';
+import { TournamentService } from './modules/tournaments/tournamentService';
+import { TournamentRepository } from './modules/tournaments/tournamentRepository';
+import { MatchRepository } from './modules/matches/matchRepository';
+import { MatchService } from './modules/matches/matchService';
+import { ApiSoccerProviderMock } from './modules/dataProviders/soccerDataProvider/apiFootballProviderMock';
+import { SoccerService } from './modules/sports/soccer/soccerService';
+import { SoccerMatchRepository } from './modules/sports/soccer/soccerRepository';
+import { SportApiGateway } from './modules/sports/sportApiGateway/sportApiGateway';
+import { MatchChallengesRepository } from './modules/matches/matchChallengeRepository';
+import { ChallengeRepository } from './modules/matches/challengeRepository';
+import { SoccerIdMatchIdMappingRepository } from './modules/sports/soccer/soccerIdMatchIdMappingRepository';
+import { EventHandler } from './common/events/eventhandler';
+import { matchController } from './modules/matches/matchController';
+import { clearIntervals, clearTimeouts } from './utils';
+import { soccerController } from './modules/sports/soccer/soccerController';
+import { UserRepository } from './modules/users/userRepository';
 import { UserService } from './modules/users/userService';
+import { AuthService } from './modules/auth/authService';
+import { AuthRepository } from './modules/auth/authRepository';
 import { userController } from './modules/users/userController';
 import { authController } from './modules/auth/authController';
-import { AuthService } from './modules/auth/authService';
-import { verifyToken } from './utils/tokenHandler';
 import { handleError } from './utils/errorHandler';
-import { ApiFootballProvider } from './modules/dataProviders/soccer/apiFootballProvider';
-import { SoccerService } from './modules/sports/soccer/soccerService';
-import { MatchService } from './modules/matches/matchService';
-import { ApiWrapper } from './utils/apiWrapper';
-import { AgendaWrapper } from './utils/scheduler/agendaWrapper';
-import { MetadataService } from './modules/metadata/metadataService';
-import { soccerController } from './modules/sports/soccer/soccerController';
-import { TournamentService } from './modules/tournaments/tournamentService';
-import { tournamentController } from './modules/tournaments/tournamentController';
-import { ChallengeService } from './modules/challenges/challengeService';
-import { SoccerChallengeService } from './modules/challenges/soccerChallengeService';
-import { BasketballChallengeService } from './modules/challenges/basketballChallengeService';
-import { MatchChallengeService } from './modules/matchChallenges/matchChallengeService';
-import { matchController } from './modules/matches/matchController';
-import { ApiRoute } from './common/enums/apiRoute';
-import { UserRepository } from './modules/users/userRepository';
-import { AuthRepository } from './modules/auth/authRepository';
-import { MetadataRepository } from './modules/metadata/metadataRepository';
-import { MatchRepository } from './modules/matches/matchRepository';
-import { ChallengeRepository } from './modules/challenges/challengeRepository';
-import { TournamentRepository } from './modules/tournaments/tournamentRepository';
-import { MatchChallengeRepository } from './modules/matchChallenges/matchChallengeRepository';
-import { SoccerRepository } from './modules/sports/soccer/soccerRepository';
 
 export const initApp = () => {
   const options = {
@@ -39,57 +35,58 @@ export const initApp = () => {
   const app = express();
   app.use(cors(options)).use(bodyParser.json());
 
-  const scheduler = new AgendaWrapper();
   const apiWrapper = new ApiWrapper();
+  const eventHandler = new EventHandler();
 
   const authRepository = new AuthRepository();
   const authService = new AuthService(authRepository);
-  app.use(`/${ApiRoute.Auth}`, authController(authService));
-
   const userRepository = new UserRepository();
   const userService = new UserService(authService, userRepository);
-  app.use(`/${ApiRoute.Users}`, /*verifyToken,*/ userController(userService));
-
-  const metadataRepository = new MetadataRepository();
-  const metadataService = new MetadataService(metadataRepository);
-
-  const matchRepository = new MatchRepository();
-  const matchService = new MatchService(matchRepository);
-
-  // for debugging purposes, consider removing in the future
-  app.use(`/${ApiRoute.Matches}`, matchController(matchService));
 
   const challengeRepository = new ChallengeRepository();
-  const challengeService = new ChallengeService(
-    challengeRepository,
-    new SoccerChallengeService(),
-    new BasketballChallengeService()
-  );
-
-  const matchChallengeRepository = new MatchChallengeRepository();
-  const matchChallengeService = new MatchChallengeService(
+  const matchChallengeRepository = new MatchChallengesRepository();
+  const matchRepository = new MatchRepository();
+  const matchService = new MatchService(
+    matchRepository,
     matchChallengeRepository,
-    challengeService
+    challengeRepository,
+    eventHandler
   );
 
   const tournamentRepository = new TournamentRepository();
   const tournamentService = new TournamentService(
     tournamentRepository,
     matchService,
-    matchChallengeService,
-    challengeService
+    eventHandler
   );
-  app.use(`/${ApiRoute.Tournaments}`, tournamentController(tournamentService));
 
-  const dataSourceProvider = new ApiFootballProvider(apiWrapper);
-  const soccerRepository = new SoccerRepository();
+  const soccerProviderMock = new ApiSoccerProviderMock();
+  const soccerMatchRepository = new SoccerMatchRepository();
+  const soccerIdMatchIdMappingRepository =
+    new SoccerIdMatchIdMappingRepository();
   const soccerService = new SoccerService(
-    dataSourceProvider,
-    soccerRepository,
-    matchService,
-    scheduler
+    soccerProviderMock,
+    soccerMatchRepository,
+    soccerIdMatchIdMappingRepository,
+    eventHandler
   );
+
+  new SportApiGateway(soccerService);
+
+  app.use(`/${ApiRoute.Users}`, userController(userService));
+  app.use(`/${ApiRoute.Auth}`, authController(authService));
+  app.use(`/${ApiRoute.Tournaments}`, tournamentController(tournamentService));
+  app.use(`/${ApiRoute.Matches}`, matchController(matchService));
   app.use(`/${ApiRoute.Soccer}`, soccerController(soccerService));
+
+  process.on('exit', () => {
+    clearIntervals();
+    clearTimeouts();
+  });
+  process.on('SIGINT', () => {
+    clearIntervals();
+    clearTimeouts();
+  });
 
   process.on('uncaughtException', (error: any) => {
     handleError(error);
@@ -97,8 +94,6 @@ export const initApp = () => {
   process.on('unhandledRejection', (error: any) => {
     handleError(error);
   });
-  process.on('SIGTERM', scheduler.stop);
-  process.on('SIGINT', scheduler.stop);
 
   app.use((error: any, req: any, res: any, next: any) => {
     const result = handleError(error);

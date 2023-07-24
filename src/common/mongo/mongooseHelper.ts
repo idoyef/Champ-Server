@@ -1,4 +1,4 @@
-import { MongooseOperator } from "./enums/mongooseOperator";
+import { MongooseOperator } from './enums/mongooseOperator';
 
 export const toMongooseQuery = (
   query: any,

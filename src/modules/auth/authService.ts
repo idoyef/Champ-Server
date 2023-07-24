@@ -6,8 +6,8 @@ import { UnauthorizedException, ErrorReason } from '../../utils/errorHandler';
 import { AuthRepository } from './authRepository';
 
 import bcryptjs from 'bcryptjs';
-import { DbUser } from '../users/models/dbUser';
 import { LoginRequest } from './models/loginRequest';
+import { DbUser } from '../users/models/db/dbUserBase';
 
 const saltRounds = 8;
 
@@ -17,17 +17,17 @@ export class AuthService {
   async setUserCredentials(user: DbUser, password: string) {
     const encryptedPassword = await bcryptjs.hash(password, saltRounds);
 
-    const credentials = new Credentials({
-      userID: user._id,
+    const credentials = {
+      userID: user.id,
       username: user.username,
       email: user.email,
       password: encryptedPassword,
-    });
+    };
 
     await this.authRepository.insert(credentials);
 
     const token = generateToken({
-      userId: user._id,
+      userId: user.id,
       username: credentials.username,
       email: credentials.email,
     });
@@ -64,7 +64,7 @@ export class AuthService {
       );
     }
 
-    const { _id: id, username, email } = dbCredentials;
+    const { id, username, email } = dbCredentials;
 
     return generateToken({ id, username, email });
   }

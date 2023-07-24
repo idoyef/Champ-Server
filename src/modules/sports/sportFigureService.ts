@@ -1,3 +1,0 @@
-export class SportFigureService {
-  constructor() {}
-}

@@ -1,12 +1,28 @@
 import { Schema } from 'mongoose';
-import { tournamentMatchChallengeSchema } from './tournamentMatchChallengeSchema';
+
+const tournamentMatch = new Schema({
+  matchId: { type: String },
+  isResolved: { type: Boolean },
+});
 
 export const tournamentSchema = new Schema({
   type: { type: String },
   totalParticipantsScore: { type: Object },
-  matchChallenges: { type: [tournamentMatchChallengeSchema] },
+  matches: { type: [tournamentMatch] },
   participantIds: { type: [String] },
   status: { type: String },
   winnerId: { type: String },
   completionScore: { type: Number, default: undefined },
-}).set('timestamps', true);
+})
+  .set('timestamps', true)
+  .set('toObject', { virtuals: true });
+
+// Duplicate the ID field.
+tournamentSchema.virtual('id').get(function () {
+  return this._id.toHexString();
+});
+
+// Ensure virtual fields are serialised.
+tournamentSchema.set('toJSON', {
+  virtuals: true,
+});

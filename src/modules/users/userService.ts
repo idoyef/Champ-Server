@@ -1,16 +1,12 @@
-import { DbUser } from './models/dbUser';
-import { Role } from '../../common/enums/role';
 import { UserRepository } from './userRepository';
-import {
-  EntityConflictException,
-  ErrorReason,
-  validate,
-} from '../../utils/errorHandler';
+import { EntityConflictException, ErrorReason } from '../../utils/errorHandler';
 import { CreateUserRequest } from './models/requests/createUserRequest';
-import { UserQuery } from './models/userQuery';
 import { UserState } from './enums/userState';
-import { SignUpRequest } from '../auth/models/signUpRequest';
+import { SignUpRequest } from './models/signUpRequest';
 import { AuthService } from '../auth/authService';
+import { DbUser } from './models/db/dbUserBase';
+import { User } from './models/user';
+import { Role } from './enums/role';
 
 const sectionName = 'UserService';
 
@@ -25,47 +21,42 @@ export class UserService {
   ): Promise<{ token: string; user: DbUser }> {
     await this.validateUserUniqueness(signUpRequest);
 
-    const user = await this.createUser(new CreateUserRequest(signUpRequest));
+    const user = await this.createUser(signUpRequest);
 
     const token = await this.authService.setUserCredentials(
       user,
       signUpRequest.password
     );
 
-    const activeUser = await this.userRepository.updateWithSetById(user._id, {
+    // TBD - add mechanism for activation by email
+    const activatedUser = await this.userRepository.updateById(user.id, {
       state: UserState.Active,
     });
 
-    return { token, user: activeUser };
+    return { token, user: activatedUser };
   }
 
   async isUsernameExists(username: string) {
-    if (username === '') {
+    if (!username.trim()) {
       return true;
     }
 
-    const user = await this.userRepository.findOneWithQuery(
-      new UserQuery({ username })
-    );
+    const user = await this.userRepository.findOneWithQuery({ username });
 
     return !!user;
   }
 
   async isEmailExists(email: string) {
-    if (email === '') {
+    if (!email.trim()) {
       return true;
     }
 
-    const user = await this.userRepository.findOneWithQuery(
-      new UserQuery({ email })
-    );
+    const user = await this.userRepository.findOneWithQuery({ email });
 
     return !!user;
   }
 
-  async createUser(user: CreateUserRequest) {
-    validate(user, sectionName);
-
+  async createUser(user: CreateUserRequest): Promise<DbUser> {
     const userToSave = this.populateUserToSave(user);
 
     return await this.userRepository.insert(userToSave);
@@ -75,9 +66,7 @@ export class UserService {
     return this.userRepository.findById(id);
   }
 
-  async getUserWithQuery(query: UserQuery): Promise<DbUser[]> {
-    validate(query, sectionName);
-
+  async getUserWithQuery(query: any): Promise<DbUser[]> {
     return this.userRepository.findManyWithQuery(query);
   }
 
@@ -98,12 +87,12 @@ export class UserService {
     }
   }
 
-  private populateUserToSave(user: CreateUserRequest): DbUser {
-    return new DbUser({
+  private populateUserToSave(user: CreateUserRequest): User {
+    return {
       username: user.username,
       email: user.email,
       role: Role.User,
       state: UserState.PreActive,
-    });
+    };
   }
 }

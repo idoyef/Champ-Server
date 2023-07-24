@@ -1,26 +1,70 @@
-import { DbMatch } from './models/database/dbMatch';
 import { MatchQuery } from './models/matchQuery';
-import { TriggeredEvent } from '../../common/models/triggeredEvent';
-import { MatchTriggeredEvent } from '../../common/models/matchTriggeredEvent';
 import { CreateMatchRequest } from './models/requests/createMatchRequest';
-import { MatchStatus } from './enums/matchStatus';
-import { EventEmitter } from 'events';
 import { MatchRepository } from './matchRepository';
+import { MatchChallenges } from './models/matchChallenge';
+import { MatchChallengesRepository } from './matchChallengeRepository';
+import { ChallengeRepository } from './challengeRepository';
+import { CreateMatchChallengeRequest } from './models/requests/createMatchChallengeRequest';
+import { MatchChallengeStatus } from './enums/MatchChallengeStatus';
+import { EventHandler } from '../../common/events/eventhandler';
+import { Challenge, DbChallenge } from './models/database/dbChallenge';
+import { ChallengeStatus } from './enums/ChallengeStatus';
+import { handlersMapping } from './challengeHandler';
+import { MatchStatus } from './enums/matchStatus';
 
-export class MatchService extends EventEmitter {
-  constructor(private matchRepository: MatchRepository) {
-    super();
+export class MatchService {
+  constructor(
+    private matchRepository: MatchRepository,
+    private matchChallengeRepository: MatchChallengesRepository,
+    private challengeRepository: ChallengeRepository, // private matchChallengeService: MatchChallengeService
+    private eventHandler: EventHandler
+  ) {
+    this.eventHandler.on('matchTriggers', async (payload) => {
+      this.handleMatchTriggers(payload);
+    });
   }
 
   async createMatch(matchRequest: CreateMatchRequest) {
     // TBD - validate
 
-    const match = this.populateMatchFromCreateRequest(matchRequest);
-    const savedMatch = await this.matchRepository.insert(match);
+    const savedMatch = await this.matchRepository.insert(matchRequest);
 
     // notify relevant users
 
     return savedMatch;
+  }
+
+  async createMatchChallenges(
+    tournamentId: string,
+    matchChallengesRequest: CreateMatchChallengeRequest[]
+  ): Promise<MatchChallenges[]> {
+    // TBD - validate
+    const matchChallengePromises = [];
+
+    for (const matchChallenges of matchChallengesRequest) {
+      const { matchId, challenges, matchType } = matchChallenges;
+
+      const challengesIds = await Promise.all(
+        challenges.map(async (challenge) => {
+          const savedChallenge = await this.challengeRepository.insert(
+            challenge
+          );
+          return savedChallenge.id;
+        })
+      );
+
+      matchChallengePromises.push(
+        this.matchChallengeRepository.insert({
+          matchId,
+          tournamentId,
+          matchType,
+          challengesIds,
+          status: MatchChallengeStatus.NotStarted,
+        })
+      );
+    }
+
+    return await Promise.all(matchChallengePromises);
   }
 
   async getMatchById(id: string) {
@@ -42,60 +86,110 @@ export class MatchService extends EventEmitter {
     return updatedMatch;
   }
 
-  async updateMatchAndTriggeredEventsById(
-    matchId: string,
-    matchStatus: MatchStatus,
-    updateObject: any,
-    triggeredEvents: TriggeredEvent[] = []
-  ) {
+  async upsertMatchWithQuery(query: MatchQuery, upsertObject: any) {
     // TBD - validate
-    const dbMatch = await this.matchRepository.findOneWithQuery({ matchId });
 
-    if (!dbMatch) {
-      // write to log
-      return;
-    }
-
-    const updatedMatch = await this.matchRepository.updateWithSetById(
-      dbMatch._id,
-      {
-        ...dbMatch,
-        triggeredEvents: dbMatch.triggeredEvents
-          ? dbMatch.triggeredEvents.concat(triggeredEvents)
-          : triggeredEvents,
-        status: matchStatus,
-        matchEntity: updateObject,
-      }
+    const upsertMatch = await this.matchRepository.upsertOneWithQuery(
+      query,
+      upsertObject
     );
 
-    if (
-      updatedMatch.tournamentIds &&
-      updatedMatch.tournamentIds.length > 0 &&
-      triggeredEvents &&
-      triggeredEvents.length > 0
-    ) {
-      const matchEvent = new MatchTriggeredEvent({
+    return upsertMatch;
+  }
+
+  private async handleMatchTriggers(payload: any) {
+    const { matchId, matchStatus, matchTrigger } = payload;
+    if (matchStatus === MatchStatus.Finished) {
+      // for test, remove
+      console.log('');
+    }
+    const tournamentIdToMatchIdsMap = new Map<string, string[]>();
+    const tournamentIdToMatchesResolved = new Map<string, boolean>();
+
+    const matchChallenges =
+      await this.matchChallengeRepository.findManyWithQuery({ matchId });
+    const isMatchFinish = matchStatus === MatchStatus.Finished;
+
+    matchChallenges.forEach(async (matchChallenge) => {
+      const { tournamentId, matchId, challengesIds } = matchChallenge;
+      const matchIds = tournamentIdToMatchIdsMap.get(
+        matchChallenge.tournamentId
+      );
+
+      if (!matchIds) {
+        tournamentIdToMatchIdsMap.set(tournamentId, [matchId]);
+      } else {
+        matchIds.push(matchId);
+        tournamentIdToMatchIdsMap.set(tournamentId, matchIds);
+      }
+
+      const challengesResolved = await this.handleChallenges(
         matchId,
-        tournamentIds: updatedMatch.tournamentIds,
-        events: triggeredEvents,
-      });
-      this.triggerSignificantEvents(matchEvent);
+        matchStatus,
+        challengesIds,
+        matchTrigger
+      );
+
+      await this.upsertMatchWithQuery(
+        { matchId },
+        {
+          challengesResolved,
+          status: matchStatus,
+        }
+      );
+
+      if (isMatchFinish && challengesResolved) {
+        console.log('~~~TOURNAMENT_MATCH_FINISHED', { matchId });
+        this.eventHandler.emit('TOURNAMENT_MATCH_FINISHED', { matchId });
+      }
+    });
+  }
+
+  private async handleChallenges(
+    matchId: string,
+    matchStatus: MatchStatus,
+    challengeIds: string[],
+    matchTriggers: any
+  ): Promise<boolean> {
+    let challengesResolved = true;
+
+    for (const challengesId of challengeIds) {
+      const challenge = await this.challengeRepository.findById(challengesId);
+
+      const handledChallenge = await this.handleChallenge(
+        matchId,
+        matchStatus,
+        challenge,
+        matchTriggers
+      );
+      if (handledChallenge.status !== ChallengeStatus.Finished) {
+        challengesResolved = false;
+      }
     }
 
-    return updatedMatch;
+    return challengesResolved;
   }
 
-  private populateMatchFromCreateRequest(matchRequest: CreateMatchRequest) {
-    const result = new DbMatch({ ...matchRequest, triggeredEvents: [] });
-    result.createdAt = new Date();
-    result.updatedAt = new Date();
-    result.status = MatchStatus.NotStarted;
-    result.tournamentIds = [];
+  private async handleChallenge(
+    matchId: string,
+    matchStatus: MatchStatus,
+    challenge: DbChallenge,
+    matchTriggers: any
+  ): Promise<DbChallenge> {
+    const match = await this.matchRepository.findOneWithQuery({ matchId });
+    const handler = handlersMapping[match.type];
 
-    return result;
-  }
+    const { challengeParticipantsScore, challengeStatus } =
+      handler.handleMatchTriggers(matchStatus, challenge, matchTriggers);
+    const updateChallenge: Challenge = {
+      ...challenge,
+      challengeParticipantsScore,
+      status: challengeStatus,
+    };
 
-  private triggerSignificantEvents(event: MatchTriggeredEvent) {
-    this.emit('significantEventTriggered', event);
+    return await this.challengeRepository.updateById(
+      challenge.id,
+      updateChallenge
+    );
   }
 }

@@ -1,23 +1,10 @@
-import { IEntity } from '../../../common/mongo/IEntity';
+import { BaseDbEntity } from '../../../common/mongo/baseDbEntity';
 
-export class Credentials implements IEntity {
-  _id!: string;
-  createdAt!: Date;
-  updatedAt!: Date;
-
-  userID!: string;
-  username!: string;
-  email!: string;
-  password!: string;
-
-  constructor(fields?: {
-    userID: string;
-    username: string;
-    email: string;
-    password: string;
-  }) {
-    if (fields) {
-      Object.assign(this, fields);
-    }
-  }
+export interface Credentials {
+  userID: string;
+  username: string;
+  email: string;
+  password: string;
 }
+
+export type DbCredentials = Credentials & BaseDbEntity;

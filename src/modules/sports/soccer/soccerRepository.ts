@@ -1,8 +1,8 @@
 import { BaseRepository } from '../../../common/mongo/mongooseWrapperRepository';
-import { SoccerMatch } from './models/soccerMatch';
+import { DbSoccerMatch } from './models/db/dbSoccerMatchBase';
 import { soccerMatchSchema } from './schemas/soccerMatchSchema';
 
-export class SoccerRepository extends BaseRepository<SoccerMatch> {
+export class SoccerMatchRepository extends BaseRepository<DbSoccerMatch> {
   constructor() {
     super('SoccerMatch', soccerMatchSchema);
   }

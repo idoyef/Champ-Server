@@ -1,0 +1,1 @@
+export { winLossHandler } from './winLossChallenge';

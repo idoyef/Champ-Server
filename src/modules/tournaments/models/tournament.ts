@@ -1,33 +1,25 @@
-import { ParticipantsScore } from './participantsScore';
-import { TournamentType } from '../enums/tournamentType';
 import { TournamentStatus } from '../enums/tournamentStatus';
-import { TournamentMatchChallenge } from './tournamentMatchChallenge';
+import { TournamentType } from '../enums/TournamentType';
+import { ParticipantsScore } from '../models/participantsScore';
+// import { TournamentMatchChallenges } from './tournamentMatchChallenge';
 
-export class Tournament {
-  id!: string;
-  version: number = 0;
-  createdAt!: Date;
-  updatedAt!: Date;
+export type Tournament = TournamentBase | FirstToScoreTournament;
 
-  type!: TournamentType;
-  matchChallenges!: TournamentMatchChallenge[];
-  participantIds!: string[];
-  totalParticipantsScore!: ParticipantsScore;
-  // matchIds!: string[];
-  // matchChallenges!: MatchChallenge[];
-  status!: TournamentStatus;
+export interface TournamentBase {
+  type: TournamentType;
+  participantIds: string[];
+  totalParticipantsScore: ParticipantsScore;
+  matches: TournamentMatch[];
+  status: TournamentStatus;
+  winnerId?: string;
+  bet: number;
+}
 
-  constructor(fields?: {
-    type: TournamentType;
-    matchChallenges: TournamentMatchChallenge[];
-    participantIds: string[];
-    totalParticipantsScore: ParticipantsScore;
-    // matchIds: string[];
-    // matchChallenges: MatchChallenge[];
-    status: TournamentStatus;
-  }) {
-    if (fields) {
-      Object.assign(this, fields);
-    }
-  }
+export interface FirstToScoreTournament extends TournamentBase {
+  completionScore: number;
+}
+
+interface TournamentMatch {
+  matchId: string;
+  isResolved: boolean;
 }

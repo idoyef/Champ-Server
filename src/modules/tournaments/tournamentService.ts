@@ -1,284 +1,124 @@
-import { TournamentQuery } from './models/tournamentQuery';
 import { TournamentStatus } from './enums/tournamentStatus';
-import { MatchService } from '../matches/matchService';
 import { CreateTournamentRequest } from './models/requests/createTournamentRequest';
-import { CreateMatchChallengeRequest } from '../matchChallenges/models/requests/createMatchChallengeRequest';
-import { UpdateTournamentRequest } from './models/requests/updateTournamentRequest';
-import { TournamentMatchChallenge } from './models/tournamentMatchChallenge';
-import { MatchChallengeService } from '../matchChallenges/matchChallengeService';
-import { DbTournamentBase } from './models/database/dbTournamentBase';
-import { ChallengeService } from '../challenges/challengeService';
-import { MatchTriggeredEvent } from '../../common/models/matchTriggeredEvent';
-import { MatchStatus } from '../matches/enums/matchStatus';
-import { MatchQuery } from '../matches/models/matchQuery';
-import { TournamentType } from './enums/tournamentType';
-import { plainToClass } from 'class-transformer';
-import { DbFirstToScoreTournamentBase } from './models/database/dbFirstToScoreTournament';
-import { ParticipantsScore } from './models/participantsScore';
+import { TournamentType } from './enums/TournamentType';
 import { TournamentRepository } from './tournamentRepository';
+import { MatchService } from '../matches/matchService';
+import { TournamentQuery } from './models/tournamentQuery';
+import { DbTournament } from './models/db/dbTournamentBase';
+import { FirstToScoreTournament, Tournament } from './models/tournament';
+import { MatchStatus } from '../matches/enums/matchStatus';
+import { CreateMatchChallengeRequest } from '../matches/models/requests/createMatchChallengeRequest';
+import { EventHandler } from '../../common/events/eventhandler';
 
 export class TournamentService {
   constructor(
     private tournamentRepository: TournamentRepository,
     private matchService: MatchService,
-    private matchChallengeService: MatchChallengeService,
-    private challengeService: ChallengeService
+    private eventHandler: EventHandler
   ) {
-    this.matchService.on(
-      'significantEventTriggered',
-      async (event: MatchTriggeredEvent) => {
-        await this.handleSignificantEventTriggered(event);
-      }
-    );
+    this.eventHandler.on('TOURNAMENT_MATCH_FINISHED', (payload) => {
+      this.handleMatchFinished(payload);
+    });
   }
 
-  async createTournament(tournamentRequest: CreateTournamentRequest) {
-    // TBD - validate
-    const tournament = this.populateTournamentFromCreateRequest(
-      tournamentRequest
-    );
-    tournament.matchChallenges = await this.populateTournamentMatchChallengesFromCreateRequest(
-      tournamentRequest.matchChallenges
-    );
-
+  async createTournament(
+    tournamentRequest: CreateTournamentRequest
+  ): Promise<DbTournament> {
+    const tournament =
+      this.populateTournamentFromCreateRequest(tournamentRequest);
     const savedTournament = await this.tournamentRepository.insert(tournament);
-    await this.addTournamentIdToMatches(
-      savedTournament._id,
-      savedTournament.matchChallenges.map((x: any) => x.matchId)
-    );
 
-    // TBD - notify relevant users
+    await Promise.all([
+      this.createMatches(savedTournament.id, tournamentRequest.matchChallenges),
+      this.matchService.createMatchChallenges(
+        savedTournament.id,
+        tournamentRequest.matchChallenges
+      ),
+    ]);
+
+    // TBD - notify relevant participants, something like: "John is inviting you to a new tournament!"
 
     return savedTournament;
   }
 
-  async getTournamentById(id: string) {
+  async getTournamentById(id: string): Promise<DbTournament> {
     return await this.tournamentRepository.findById(id);
   }
 
-  async getTournamentWithQuery(query: TournamentQuery) {
-    return await this.tournamentRepository.findManyWithQuery(query);
-  }
-
-  // TBD version id to prevent race condition
-  async updateTournamentById(tournamentRequest: UpdateTournamentRequest) {
-    // TBD - validate
-    const dbTournament = await this.tournamentRepository.findById(
-      tournamentRequest.id
-    );
-    if (!dbTournament) {
-      // TBD - throw exception
-    }
-
-    dbTournament.updatedAt = new Date();
-    if (
-      tournamentRequest.participantIds &&
-      tournamentRequest.participantIds.length > 0
-    ) {
-      //TBD - consider terms for joining new participants after the tournament began
-      for (const id of tournamentRequest.participantIds) {
-        if (!dbTournament.totalParticipantsScore[id]) {
-          dbTournament.totalParticipantsScore[id] = 0;
-        }
-      }
-    }
-
-    if (tournamentRequest.matchChallenges) {
-      const newMatchIds: string[] = [];
-      for (const matchChallengeToUpdate of tournamentRequest.matchChallenges) {
-        const match = await this.matchService.getMatchById(
-          matchChallengeToUpdate.matchId
-        );
-        // if (!match || match.status !== MatchStatus.NotStarted) {
-        //   // aggregate error message for client: 'cannot update match challenge, match already began'
-        //   continue;
-        // }
-
-        const dbMatchChallengeIndex = dbTournament.matchChallenges.findIndex(
-          (mc: any) => mc.matchId === matchChallengeToUpdate.matchId
-        );
-
-        if (dbMatchChallengeIndex === -1) {
-          const newMatchChallenge = await this.matchChallengeService.addMatchChallenge(
-            matchChallengeToUpdate
-          );
-          dbTournament.matchChallenges.push(
-            new TournamentMatchChallenge({
-              matchChallengeId: newMatchChallenge._id,
-              matchId: matchChallengeToUpdate.matchId,
-            })
-          );
-          newMatchIds.push(matchChallengeToUpdate.matchId);
-        } else {
-          // update match challenge
-        }
-      }
-    }
-
-    const updatedTournament = await this.tournamentRepository.updateWithSetById(
-      dbTournament._id,
-      dbTournament
-    );
-
-    // notify new participants on new tournament
-    // notify participants on new matches added to tournament
-
-    return updatedTournament;
+  async getTournamentWithQuery(query: TournamentQuery): Promise<DbTournament> {
+    return await this.tournamentRepository.findOneWithQuery(query);
   }
 
   private populateTournamentFromCreateRequest(
     tournamentRequest: CreateTournamentRequest
-  ): DbTournamentBase {
-    let result: any = {};
+  ): Tournament {
+    const { type, matchChallenges, participantIds, completionScore, bet } =
+      tournamentRequest;
+    const tournamentEnrich = {};
 
-    result.type = tournamentRequest.type;
-    result.participantIds = tournamentRequest.participantIds ?? [];
-    result.totalParticipantsScore = {};
-    for (const id of tournamentRequest.participantIds) {
-      result.totalParticipantsScore[id] = 0;
-    }
-    result.status = TournamentStatus.NotStarted;
-
-    switch (tournamentRequest.type) {
+    switch (type) {
       case TournamentType.FirstToReachScore:
-        result.completionScore = tournamentRequest.completionScore;
-        return plainToClass(
-          DbFirstToScoreTournamentBase,
-          result as DbFirstToScoreTournamentBase
-        );
-      default:
-        return plainToClass(DbTournamentBase, result as DbTournamentBase);
+        if (!completionScore) {
+          throw new Error(
+            'missing completion score in firstToScore tournament type'
+          );
+        }
+        (tournamentEnrich as FirstToScoreTournament).completionScore =
+          completionScore;
+        break;
     }
+
+    return {
+      ...tournamentEnrich,
+      type,
+      matches: matchChallenges.map(({ matchId }) => ({
+        matchId,
+        isResolved: false,
+      })),
+      participantIds,
+      bet,
+      totalParticipantsScore:
+        this.participantIdsToTotalParticipantsScore(participantIds),
+      status: TournamentStatus.NotStarted,
+    };
   }
 
-  private async populateTournamentMatchChallengesFromCreateRequest(
-    matchChallenges: CreateMatchChallengeRequest[]
-  ): Promise<TournamentMatchChallenge[]> {
-    const result: TournamentMatchChallenge[] = [];
-
-    if (matchChallenges && matchChallenges.length > 0) {
-      for (const matchChallengeRequest of matchChallenges) {
-        const query = new MatchQuery({
-          matchId: matchChallengeRequest.matchId,
-        });
-        const match = await this.matchService.getMatchWithQuery(query);
-        // if (match && match.status !== MatchStatus.NotStarted) {
-        //   // aggregate error message for client: 'cannot add match challenge, match already began'
-        //   continue;
-        // }
-
-        const savedMatchChallenge = await this.matchChallengeService.addMatchChallenge(
-          matchChallengeRequest
-        );
-        result.push(
-          new TournamentMatchChallenge({
-            matchChallengeId: savedMatchChallenge._id,
-            matchId: matchChallengeRequest.matchId,
-          })
-        );
-      }
+  private participantIdsToTotalParticipantsScore(participantIds: string[]) {
+    const result: { [key: string]: number } = {};
+    for (const id of participantIds) {
+      result[id] = 0;
     }
 
     return result;
   }
 
-  private async addTournamentIdToMatches(
+  private async createMatches(
     tournamentId: string,
-    matchIds: string[]
+    matchChallenges: CreateMatchChallengeRequest[]
   ) {
-    for (const matchId of matchIds) {
-      const match = await this.matchService.getMatchWithQuery(
-        new MatchQuery({ matchId })
-      );
-      await this.matchService.updateMatchById(match._id, {
-        $addToSet: { tournamentIds: tournamentId },
+    const matchesPromises = matchChallenges.map((matchChallenge) => {
+      return this.matchService.createMatch({
+        type: matchChallenge.matchType,
+        status: MatchStatus.NotStarted,
+        tournamentIds: [tournamentId],
+        matchId: matchChallenge.matchId,
       });
-    }
+    });
+
+    await Promise.all(matchesPromises);
   }
 
-  private async handleSignificantEventTriggered(event: MatchTriggeredEvent) {
-    const relevantTournamentIds = event.tournamentIds; // TBD - also query status active
+  private async handleMatchFinished(payload: any) {
+    const { tournamentId, matchId } = payload;
 
-    for (const tournamentId of relevantTournamentIds) {
-      // TBD handle the process with version
-      const tournament = await this.getTournamentById(tournamentId);
-      const tournamentMatchChallenge = tournament.matchChallenges.find(
-        (x: any) => x.matchId === event.matchId
-      );
-      if (tournamentMatchChallenge) {
-        const updatedMatchChallenge = await this.matchChallengeService.calculateAndUpdateMatchChallenge(
-          tournamentMatchChallenge.matchChallengeId,
-          event.events
-        );
+    const tournament = await this.tournamentRepository.findById(tournamentId);
+    const updatedMatches = tournament.matches.map((match) => {
+      return match.matchId === matchId ? { matchId, isResolved: true } : match;
+    });
 
-        const totalParticipantsScore =
-          tournament.totalParticipantsScore ?? new ParticipantsScore({});
-
-        for (const ps in updatedMatchChallenge.matchParticipantsScore) {
-          if (updatedMatchChallenge.matchParticipantsScore[ps] > 0) {
-            totalParticipantsScore[ps] = totalParticipantsScore[ps]
-              ? totalParticipantsScore[ps] +
-                updatedMatchChallenge.matchParticipantsScore[ps]
-              : updatedMatchChallenge.matchParticipantsScore[ps];
-          } else {
-            totalParticipantsScore[ps] = totalParticipantsScore[ps] ?? 0;
-          }
-        }
-
-        tournament.totalParticipantsScore = totalParticipantsScore;
-
-        const checkedTournament = await this.checkAndHandleFinishedTournament(
-          tournament
-        );
-
-        const updatedTournament = await this.tournamentRepository.updateWithSetById(
-          tournamentId,
-          checkedTournament
-        );
-        // retry if version does not match
-
-        if (updatedTournament.status === TournamentStatus.Finished) {
-          // handle payout
-          // notify participants
-        }
-      }
-    }
-  }
-  async checkAndHandleFinishedTournament(tournament: DbTournamentBase) {
-    switch (tournament.type) {
-      case TournamentType.FirstToReachScore:
-        let winner: any = {
-          score: 0,
-        };
-        for (const participantId in tournament.totalParticipantsScore) {
-          if (
-            Object.prototype.hasOwnProperty.call(
-              tournament.totalParticipantsScore,
-              participantId
-            )
-          ) {
-            const score = tournament.totalParticipantsScore[participantId];
-            if (
-              score >=
-                (tournament as DbFirstToScoreTournamentBase).completionScore &&
-              score > winner.score
-            ) {
-              winner.id = participantId;
-              winner.score = score;
-            }
-          }
-        }
-
-        if (winner.score > 0) {
-          tournament.status = TournamentStatus.Finished;
-          tournament.winnerId = winner.id;
-        }
-        break;
-
-      default:
-        break;
-    }
-
-    return tournament;
+    await this.tournamentRepository.updateById(tournamentId, {
+      ...tournament,
+      matches: updatedMatches,
+    });
   }
 }

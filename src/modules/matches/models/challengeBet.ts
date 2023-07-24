@@ -1,12 +1,6 @@
-import { ParticipantsGuess } from '../../tournaments/models/participantsBet';
+import { ParticipantsGuess } from './participantsGuess';
 
-export class ChallengeGuess {
-  participantsGuess!: ParticipantsGuess;
-  bet!: number;
-
-  constructor(fields?: { participantsGuess: ParticipantsGuess; bet: number }) {
-    if (fields) {
-      Object.assign(this, fields);
-    }
-  }
+export interface ChallengeGuess {
+  participantsGuess: ParticipantsGuess;
+  score: number;
 }

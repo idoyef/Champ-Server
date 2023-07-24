@@ -37,7 +37,7 @@ export const verifyToken = (
       );
     }
 
-    req.userInfo = payload;
+    // req.userInfo = payload;
     next();
   });
 };

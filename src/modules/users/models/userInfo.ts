@@ -1,13 +1,7 @@
-import { Role } from "../../../common/enums/role";
+import { Role } from '../enums/role';
 
-export class UserInfo {
-    id!: string;
-    username!: string;
-    role!: Role;
-
-    constructor(fields?: { id: string; userName: string; role: Role; }) {
-        if (fields) {
-            Object.assign(this, fields);
-        }
-    }
+export interface UserInfo {
+  id: string;
+  username: string;
+  role: Role;
 }

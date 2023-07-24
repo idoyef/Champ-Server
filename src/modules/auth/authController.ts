@@ -1,7 +1,5 @@
 import express, { NextFunction, Request, Response } from 'express';
 import { AuthService } from './authService';
-import { plainToClass } from 'class-transformer';
-import { LoginRequest } from './models/loginRequest';
 
 const router = express.Router();
 
@@ -11,8 +9,7 @@ export const authController = (authService: AuthService) => {
 
   async function login(req: Request, res: Response, next: NextFunction) {
     try {
-      const loginRequest = plainToClass(LoginRequest, req.body as LoginRequest);
-      const result = await authService.login(loginRequest);
+      const result = await authService.login(req.body);
       return res.status(201).json(result);
     } catch (error) {
       next(error);
