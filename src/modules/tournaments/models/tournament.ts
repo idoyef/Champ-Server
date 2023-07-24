@@ -11,7 +11,7 @@ export interface TournamentBase {
   totalParticipantsScore: ParticipantsScore;
   matches: TournamentMatch[];
   status: TournamentStatus;
-  winnerIds?: string[];
+  winnersIds?: string[];
   bet: number;
 }
 

@@ -11,8 +11,9 @@ export const tournamentSchema = new Schema({
   matches: { type: [tournamentMatch] },
   participantIds: { type: [String] },
   status: { type: String },
-  winnerIds: { type: [String] },
+  winnersIds: { type: [String] },
   completionScore: { type: Number, default: undefined },
+  bet: { type: Number },
 })
   .set('timestamps', true)
   .set('toObject', { virtuals: true });

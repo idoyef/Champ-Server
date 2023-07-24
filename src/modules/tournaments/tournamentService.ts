@@ -111,14 +111,13 @@ export class TournamentService {
 
   private async handleMatchFinished(payload: any) {
     const { tournamentId, matchId, participantsScore } = payload;
-    console.log('~~~TOURNAMENT_MATCH_FINISHED handler', {
-      tournamentId,
-      matchId,
-      participantsScore,
-    });
     let allMatchesResolved = true;
 
     const tournament = await this.tournamentRepository.findById(tournamentId);
+    if (tournament.status === TournamentStatus.Finished) {
+      return;
+    }
+
     const updatedMatches = tournament.matches.map((match) => {
       const result =
         match.matchId === matchId ? { matchId, isResolved: true } : match;
@@ -132,14 +131,14 @@ export class TournamentService {
       allMatchesResolved,
       participantsScore
     );
-    console.log('~~~TOURNAMENT_MATCH_FINISHED winners', {
-      winnersIds,
-    });
 
     await this.tournamentRepository.updateById(tournamentId, {
       ...tournament,
       matches: updatedMatches,
-      ...(winnersIds?.length && { winnersIds }),
+      ...(winnersIds?.length && {
+        winnersIds,
+        status: TournamentStatus.Finished,
+      }),
     });
   }
 
