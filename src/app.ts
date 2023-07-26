@@ -28,6 +28,8 @@ import { authController } from './modules/auth/authController';
 import { handleError } from './utils/errorHandler';
 import { CoinRepository } from './modules/coins/coinRepository';
 import { CoinService } from './modules/coins/coinService';
+import { UserBffService } from './modules/usersBff/userBffService';
+import { UserBffController } from './modules/usersBff/userBffController';
 
 export const initApp = () => {
   const options = {
@@ -48,7 +50,7 @@ export const initApp = () => {
 
   // coins
   const coinRepository = new CoinRepository();
-  new CoinService(coinRepository, eventHandler);
+  const coinService = new CoinService(coinRepository, eventHandler);
 
   // challenge & challengeMatch
   const challengeRepository = new ChallengeRepository();
@@ -83,11 +85,20 @@ export const initApp = () => {
 
   new SportApiGateway(soccerService);
 
+  // BFFs
+  const userBffService = new UserBffService(
+    authService,
+    userService,
+    coinService,
+    tournamentService
+  );
+
   app.use(`/${ApiRoute.Users}`, userController(userService));
   app.use(`/${ApiRoute.Auth}`, authController(authService));
   app.use(`/${ApiRoute.Tournaments}`, tournamentController(tournamentService));
   app.use(`/${ApiRoute.Matches}`, matchController(matchService));
   app.use(`/${ApiRoute.Soccer}`, soccerController(soccerService));
+  app.use(`/${ApiRoute.UsersBff}`, UserBffController(userBffService));
 
   process.on('exit', () => {
     clearIntervals();

@@ -12,6 +12,8 @@ export class CoinService {
     });
   }
 
+  async getCoinsByUserId(userId: string) {}
+
   async addCoins(userId: string, numberOfCoins: number) {}
 
   async substructCoins(userId: string, numberOfCoins: number) {}

@@ -50,6 +50,10 @@ export class TournamentService {
     return await this.tournamentRepository.findOneWithQuery(query);
   }
 
+  async getUserTournamentsByUserId(userId: string) {
+    return []; // TBD - implement new table userTournaments
+  }
+
   private populateTournamentFromCreateRequest(
     tournamentRequest: CreateTournamentRequest
   ): Tournament {

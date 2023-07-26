@@ -4,4 +4,5 @@ export enum ApiRoute {
   Matches = 'matches',
   Tournaments = 'tournaments',
   Soccer = 'soccer',
+  UsersBff = 'usersBff',
 }
