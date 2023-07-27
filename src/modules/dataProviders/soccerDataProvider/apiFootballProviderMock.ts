@@ -11,12 +11,6 @@ let index = 0;
 const url = 'http://localhost:3000/fixtures?live=all';
 const headers = {};
 
-// const url = 'https://api-football-v1.p.rapidapi.com/v3/fixtures?live=all';
-// const headers = {
-//   'x-rapidapi-key': '0f310d67a1mshda0cffd2bce707ep14e36bjsne2f599259e4f',
-//   'x-rapidapi-host': 'api-football-v1.p.rapidapi.com',
-// };
-
 export class ApiSoccerProviderMock {
   private intervalNumber;
 
