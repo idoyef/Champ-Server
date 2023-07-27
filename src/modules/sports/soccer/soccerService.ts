@@ -27,7 +27,6 @@ export class SoccerService implements SportService<SoccerMatch> {
   constructor(
     private footballProviderMock: ApiSoccerProviderMock,
     private soccerMatchRepository: SoccerMatchRepository,
-    private soccerIdMatchIdMappingRepository: SoccerIdMatchIdMappingRepository,
     private eventHandler: EventHandler
   ) {
     this.getStartedMatches();
@@ -65,7 +64,6 @@ export class SoccerService implements SportService<SoccerMatch> {
     const matches = await this.footballProviderMock.getAllLiveMatches();
 
     matches.forEach(async (match) => {
-      // let matchId;
       let previousMatchState;
       const soccerId = match.fixture.id;
       let soccerMatch = (await this.findMatchesWithQuery({ soccerId }))?.[0];
@@ -73,25 +71,14 @@ export class SoccerService implements SportService<SoccerMatch> {
         soccerMatchStatusToMatchStatusMap[match.fixture.status.short];
 
       if (!soccerMatch) {
-        soccerMatch = await this.createMatch({ ...match, matchStatus });
+        soccerMatch = await this.createMatch({
+          ...match,
+          soccerId,
+          matchStatus,
+        });
+      } else {
+        previousMatchState = await this.findMatchById(soccerMatch.id);
       }
-
-      // const mapping =
-      //   await this.soccerIdMatchIdMappingRepository.findOneWithQuery({
-      //     soccerId,
-      //   });
-
-      // if (!mapping) {
-      //   const { id } = await this.createMatch(match);
-      //   await this.soccerIdMatchIdMappingRepository.insert({
-      //     id,
-      //     soccerId,
-      //   });
-      //   matchId = id;
-      // } else {
-      //   previousMatchState = await this.findMatchById(mapping.id);
-      //   matchId = mapping.id;
-      // }
 
       this.calculateAndSendMatchTriggers(
         soccerMatch.id,

@@ -76,12 +76,9 @@ export const initApp = () => {
   // soccer provider & soccer match
   const soccerProviderMock = new ApiSoccerProviderMock();
   const soccerMatchRepository = new SoccerMatchRepository();
-  const soccerIdMatchIdMappingRepository =
-    new SoccerIdMatchIdMappingRepository();
   const soccerService = new SoccerService(
     soccerProviderMock,
     soccerMatchRepository,
-    soccerIdMatchIdMappingRepository,
     eventHandler
   );
 

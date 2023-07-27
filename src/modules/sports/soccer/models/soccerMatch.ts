@@ -7,7 +7,7 @@ import {
 
 export interface SoccerMatch {
   date: Date;
-  soccerId: string;
+  soccerId: number;
   matchStatus: MatchStatus;
   fixture: SoccerFixture;
   league: SoccerLeague;
