@@ -56,6 +56,10 @@ export class SoccerService implements SportService<SoccerMatch> {
     return await this.soccerMatchRepository.findManyWithQuery(query);
   }
 
+  async findSoccerIdMatchIdMappingWithQuery(query: any) {
+    return await this.soccerIdMatchIdMappingRepository.findManyWithQuery(query);
+  }
+
   async getStartedMatches() {
     // get matches from dataProvider
     const matches = await this.footballProviderMock.getAllLiveMatches();

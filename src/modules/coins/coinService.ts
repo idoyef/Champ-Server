@@ -1,22 +1,40 @@
-import { EventHandler } from '../../common/events/eventHandler';
 import { CoinRepository } from './coinRepository';
 import { CoinQuery } from './models/coinQuery';
 
 export class CoinService {
-  constructor(
-    private coinRepository: CoinRepository,
-    private eventHandler: EventHandler
-  ) {
-    this.eventHandler.on('modifyUserCoins', async (payload) => {
-      // handler
-    });
+  constructor(private coinRepository: CoinRepository) {}
+
+  async getCoinsByUserId(userId: string): Promise<number | undefined> {
+    return (await this.getCoinsWithQuery({ userId }))?.coins;
   }
 
-  async getCoinsByUserId(userId: string) {}
+  async addCoins(userId: string, numberOfCoins: number) {
+    const userCoins = await this.getCoinsByUserId(userId);
 
-  async addCoins(userId: string, numberOfCoins: number) {}
+    if (!userCoins && userCoins !== 0) {
+      return await this.coinRepository.insert({ userId, coins: numberOfCoins });
+    }
 
-  async substructCoins(userId: string, numberOfCoins: number) {}
+    return await this.coinRepository.upsertOneWithQuery(
+      { userId },
+      { coins: userCoins + numberOfCoins }
+    );
+  }
 
-  async getCoinsWithQuery(query: CoinQuery) {}
+  async substructCoins(userId: string, numberOfCoins: number) {
+    const userCoins = await this.getCoinsByUserId(userId);
+
+    if (!userCoins || userCoins - numberOfCoins < 0) {
+      throw new Error('The user has insufficient number of coins'); // change to an error with number of coins in the payload
+    }
+
+    return await this.coinRepository.upsertOneWithQuery(
+      { userId },
+      { coins: userCoins - numberOfCoins }
+    );
+  }
+
+  private async getCoinsWithQuery(query: CoinQuery) {
+    return this.coinRepository.findOneWithQuery(query);
+  }
 }

@@ -10,11 +10,13 @@ import { MatchStatus } from '../matches/enums/matchStatus';
 import { CreateMatchChallengeRequest } from '../matches/models/requests/createMatchChallengeRequest';
 import { EventHandler } from '../../common/events/eventHandler';
 import { ParticipantsScore } from './models/participantsScore';
+import { CoinService } from '../coins/coinService';
 
 export class TournamentService {
   constructor(
     private tournamentRepository: TournamentRepository,
     private matchService: MatchService,
+    private coinService: CoinService,
     private eventHandler: EventHandler
   ) {
     this.eventHandler.on('TOURNAMENT_MATCH_FINISHED', (payload) => {
@@ -136,14 +138,22 @@ export class TournamentService {
       participantsScore
     );
 
-    await this.tournamentRepository.updateById(tournamentId, {
+    const tournamentToUpdate = {
       ...tournament,
       matches: updatedMatches,
-      ...(winnersIds?.length && {
-        winnersIds,
-        status: TournamentStatus.Finished,
-      }),
-    });
+    };
+
+    if (winnersIds && winnersIds.length > 0) {
+      tournamentToUpdate.winnersIds = winnersIds;
+      tournamentToUpdate.status = TournamentStatus.Finished;
+
+      this.distributeCoins(winnersIds, tournament.bet);
+    }
+
+    await this.tournamentRepository.updateById(
+      tournamentId,
+      tournamentToUpdate
+    );
   }
 
   private handleTournamentFinished(
@@ -185,5 +195,15 @@ export class TournamentService {
       }
     }
     return { highestScore, winners };
+  }
+
+  private async distributeCoins(userIds: string[], coins: number) {
+    const distributedCoins = Math.floor(coins / userIds.length); // TBD calculate the reminder and split randomly
+
+    await Promise.all(
+      userIds.map((userId) =>
+        this.coinService.addCoins(userId, distributedCoins)
+      )
+    );
   }
 }

@@ -1,3 +1,3 @@
 export interface CoinQuery {
-  userid: string;
+  userId: string;
 }
