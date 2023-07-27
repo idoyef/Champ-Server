@@ -54,15 +54,10 @@ export class Seed {
 
       await sleep(5000);
 
-      const matches = await this.soccerService.findMatchesWithQuery({});
-      const matchIdsMapping = await Promise.all(
-        matches.map((match) =>
-          this.soccerService.findSoccerIdMatchIdMappingWithQuery({
-            soccerId: match.fixture.id,
-          })
-        )
-      );
-      const matchIds = matchIdsMapping.map((mapping) => mapping[0].id);
+      const matches = await this.soccerService.findMatchesWithQuery({
+        matchStatus: MatchStatus.NotStarted,
+      });
+      const matchIds = matches.map(({ id }) => id);
 
       await this.tournamentService.createTournament(
         getTournamentBody(matchIds, userIds)

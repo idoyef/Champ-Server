@@ -2,6 +2,8 @@ import { Schema } from 'mongoose';
 
 export const soccerMatchSchema = new Schema({
   date: { type: Date, index: true },
+  soccerId: { type: String },
+  matchId: { type: String },
   fixture: { type: Object, required: false },
   league: { type: Object, required: false },
   teams: { type: Object, required: false },

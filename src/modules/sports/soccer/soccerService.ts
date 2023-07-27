@@ -48,47 +48,59 @@ export class SoccerService implements SportService<SoccerMatch> {
     });
   }
 
-  async findMatchById(id: string): Promise<SoccerMatch> {
+  async findMatchById(id: string): Promise<DbSoccerMatch> {
     return await this.soccerMatchRepository.findById(id);
   }
 
-  async findMatchesWithQuery(query: any): Promise<SoccerMatch[]> {
+  async findMatchesWithQuery(query: any): Promise<DbSoccerMatch[]> {
     return await this.soccerMatchRepository.findManyWithQuery(query);
   }
 
-  async findSoccerIdMatchIdMappingWithQuery(query: any) {
-    return await this.soccerIdMatchIdMappingRepository.findManyWithQuery(query);
-  }
+  // async findSoccerIdMatchIdMappingWithQuery(query: any) {
+  //   return await this.soccerIdMatchIdMappingRepository.findManyWithQuery(query);
+  // }
 
   async getStartedMatches() {
     // get matches from dataProvider
     const matches = await this.footballProviderMock.getAllLiveMatches();
 
     matches.forEach(async (match) => {
-      let matchId;
+      // let matchId;
       let previousMatchState;
       const soccerId = match.fixture.id;
-      const mapping =
-        await this.soccerIdMatchIdMappingRepository.findOneWithQuery({
-          soccerId,
-        });
+      let soccerMatch = (await this.findMatchesWithQuery({ soccerId }))?.[0];
+      const matchStatus =
+        soccerMatchStatusToMatchStatusMap[match.fixture.status.short];
 
-      if (!mapping) {
-        const { id } = await this.createMatch(match);
-        await this.soccerIdMatchIdMappingRepository.insert({
-          id,
-          soccerId,
-        });
-        matchId = id;
-      } else {
-        previousMatchState = await this.findMatchById(mapping.id);
-        matchId = mapping.id;
+      if (!soccerMatch) {
+        soccerMatch = await this.createMatch({ ...match, matchStatus });
       }
 
-      this.calculateAndSendMatchTriggers(matchId, previousMatchState, match);
+      // const mapping =
+      //   await this.soccerIdMatchIdMappingRepository.findOneWithQuery({
+      //     soccerId,
+      //   });
+
+      // if (!mapping) {
+      //   const { id } = await this.createMatch(match);
+      //   await this.soccerIdMatchIdMappingRepository.insert({
+      //     id,
+      //     soccerId,
+      //   });
+      //   matchId = id;
+      // } else {
+      //   previousMatchState = await this.findMatchById(mapping.id);
+      //   matchId = mapping.id;
+      // }
+
+      this.calculateAndSendMatchTriggers(
+        soccerMatch.id,
+        previousMatchState,
+        match
+      );
 
       if (previousMatchState) {
-        await this.soccerMatchRepository.updateById(matchId, match);
+        await this.soccerMatchRepository.updateById(soccerMatch.id, match);
       }
     });
   }

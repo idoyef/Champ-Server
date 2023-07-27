@@ -1,4 +1,5 @@
 import { EventType } from '../enums/events';
+import { MatchStatus } from '../enums/matchStatus';
 import {
   SoccerFixtureStatusLong,
   SoccerFixtureStatusShort,
@@ -6,6 +7,8 @@ import {
 
 export interface SoccerMatch {
   date: Date;
+  soccerId: string;
+  matchStatus: MatchStatus;
   fixture: SoccerFixture;
   league: SoccerLeague;
   teams: SoccerMatchTeams;
