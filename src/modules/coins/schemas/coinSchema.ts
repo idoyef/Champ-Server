@@ -12,7 +12,7 @@ coinSchema.virtual('id').get(function () {
   return this._id.toHexString();
 });
 
-// Ensure virtual fields are serialised.
+// Ensure virtual fields are serialized.
 coinSchema.set('toJSON', {
   virtuals: true,
 });

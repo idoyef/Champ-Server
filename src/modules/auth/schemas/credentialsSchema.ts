@@ -13,7 +13,7 @@ credentialsSchema.virtual('id').get(function () {
   return this._id.toHexString();
 });
 
-// Ensure virtual fields are serialised.
+// Ensure virtual fields are serialized.
 credentialsSchema.set('toJSON', {
   virtuals: true,
 });

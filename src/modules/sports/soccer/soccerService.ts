@@ -30,14 +30,14 @@ export class SoccerService implements SportService<SoccerMatch> {
     private soccerIdMatchIdMappingRepository: SoccerIdMatchIdMappingRepository,
     private eventHandler: EventHandler
   ) {
-    // this.getStartedMatches();
-    // setTimeoutWrapper(
-    //   () =>
-    //     setIntervalWrapper(() => {
-    //       this.getStartedMatches();
-    //     }, 2000),
-    //   20000
-    // );
+    this.getStartedMatches();
+    setTimeoutWrapper(
+      () =>
+        setIntervalWrapper(() => {
+          this.getStartedMatches();
+        }, 2000),
+      20000
+    );
     // initialize scheduler for getting matches from dataProvider
   }
 

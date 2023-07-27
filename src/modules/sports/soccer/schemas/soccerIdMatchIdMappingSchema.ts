@@ -12,7 +12,7 @@ export const soccerIdMatchIdMappingSchema = new Schema({
 //   return this._id.toHexString();
 // });
 
-// Ensure virtual fields are serialised.
+// Ensure virtual fields are serialized.
 soccerIdMatchIdMappingSchema.set('toJSON', {
   virtuals: true,
 });

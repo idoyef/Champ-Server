@@ -14,6 +14,7 @@ export const tournamentSchema = new Schema({
   winnersIds: { type: [String] },
   completionScore: { type: Number, default: undefined },
   bet: { type: Number },
+  sharedPot: { type: Number },
 })
   .set('timestamps', true)
   .set('toObject', { virtuals: true });
@@ -23,7 +24,7 @@ tournamentSchema.virtual('id').get(function () {
   return this._id.toHexString();
 });
 
-// Ensure virtual fields are serialised.
+// Ensure virtual fields are serialized.
 tournamentSchema.set('toJSON', {
   virtuals: true,
 });

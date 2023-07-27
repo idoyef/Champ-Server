@@ -13,6 +13,7 @@ export interface TournamentBase {
   status: TournamentStatus;
   winnersIds?: string[];
   bet: number;
+  sharedPot: number;
 }
 
 export interface FirstToScoreTournament extends TournamentBase {

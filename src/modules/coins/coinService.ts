@@ -21,7 +21,7 @@ export class CoinService {
     );
   }
 
-  async substructCoins(userId: string, numberOfCoins: number) {
+  async subtractCoins(userId: string, numberOfCoins: number) {
     const userCoins = await this.getCoinsByUserId(userId);
 
     if (!userCoins || userCoins - numberOfCoins < 0) {

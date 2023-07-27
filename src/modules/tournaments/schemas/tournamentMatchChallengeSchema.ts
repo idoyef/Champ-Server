@@ -13,7 +13,7 @@ tournamentMatchChallengeSchema.virtual('id').get(function () {
   return this._id.toHexString();
 });
 
-// Ensure virtual fields are serialised.
+// Ensure virtual fields are serialized.
 tournamentMatchChallengeSchema.set('toJSON', {
   virtuals: true,
 });

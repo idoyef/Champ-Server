@@ -11,7 +11,7 @@ export class BaseRepository<T> implements IBaseRepository<T> {
     //   return this._id.toHexString();
     // });
 
-    // // Ensure virtual fields are serialised.
+    // // Ensure virtual fields are serialized.
     // schema.set('toJSON', {
     //   virtuals: true,
     // });

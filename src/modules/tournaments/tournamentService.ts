@@ -27,15 +27,22 @@ export class TournamentService {
   async createTournament(
     tournamentRequest: CreateTournamentRequest
   ): Promise<DbTournament> {
+    const { participantIds, bet, matchChallenges } = tournamentRequest;
+    await Promise.all(
+      participantIds.map((userId) =>
+        this.coinService.subtractCoins(userId, bet)
+      )
+    );
+
     const tournament =
       this.populateTournamentFromCreateRequest(tournamentRequest);
     const savedTournament = await this.tournamentRepository.insert(tournament);
 
     await Promise.all([
-      this.createMatches(savedTournament.id, tournamentRequest.matchChallenges),
+      this.createMatches(savedTournament.id, matchChallenges),
       this.matchService.createMatchChallenges(
         savedTournament.id,
-        tournamentRequest.matchChallenges
+        matchChallenges
       ),
     ]);
 
@@ -84,6 +91,7 @@ export class TournamentService {
       })),
       participantIds,
       bet,
+      sharedPot: bet * participantIds.length,
       totalParticipantsScore:
         this.participantIdsToTotalParticipantsScore(participantIds),
       status: TournamentStatus.NotStarted,
@@ -147,7 +155,7 @@ export class TournamentService {
       tournamentToUpdate.winnersIds = winnersIds;
       tournamentToUpdate.status = TournamentStatus.Finished;
 
-      this.distributeCoins(winnersIds, tournament.bet);
+      this.distributeCoins(winnersIds, tournament.sharedPot);
     }
 
     await this.tournamentRepository.updateById(
@@ -214,11 +222,11 @@ export class TournamentService {
     const usersCopy = [...userIds];
     const baseCoins = Math.floor(coins / userIds.length);
 
-    const lefthover = coins - baseCoins * userIds.length;
+    const leftover = coins - baseCoins * userIds.length;
     const selectedUsers = [];
 
-    for (let index = 0; index < lefthover; index++) {
-      const rand = this.getRandomNumberInRange(1, lefthover - index);
+    for (let index = 0; index < leftover; index++) {
+      const rand = this.getRandomNumberInRange(1, leftover - index);
       selectedUsers.push(userIds[rand]);
       usersCopy.splice(rand - 1, 1);
     }

@@ -32,12 +32,12 @@ const users = [
   },
 ];
 
-export class seed {
+export class Seed {
   constructor(
     private userService: UserService,
     private coinService: CoinService,
     private soccerService: SoccerService,
-    private tournamenentService: TournamentService
+    private tournamentService: TournamentService
   ) {}
 
   async init() {
@@ -52,11 +52,9 @@ export class seed {
         )
       );
 
-      await sleep(10000);
+      await sleep(5000);
 
-      const matches = await this.soccerService.findMatchesWithQuery({
-        status: MatchStatus.NotStarted,
-      });
+      const matches = await this.soccerService.findMatchesWithQuery({});
       const matchIdsMapping = await Promise.all(
         matches.map((match) =>
           this.soccerService.findSoccerIdMatchIdMappingWithQuery({
@@ -66,7 +64,7 @@ export class seed {
       );
       const matchIds = matchIdsMapping.map((mapping) => mapping[0].id);
 
-      await this.tournamenentService.createTournament(
+      await this.tournamentService.createTournament(
         getTournamentBody(matchIds, userIds)
       );
     } catch (error) {

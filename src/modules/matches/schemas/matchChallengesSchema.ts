@@ -15,7 +15,7 @@ matchChallengesSchema.virtual('id').get(function () {
   return this._id.toHexString();
 });
 
-// Ensure virtual fields are serialised.
+// Ensure virtual fields are serialized.
 matchChallengesSchema.set('toJSON', {
   virtuals: true,
 });
