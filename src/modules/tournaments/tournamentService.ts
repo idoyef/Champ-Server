@@ -198,12 +198,44 @@ export class TournamentService {
   }
 
   private async distributeCoins(userIds: string[], coins: number) {
-    const distributedCoins = Math.floor(coins / userIds.length); // TBD calculate the reminder and split randomly
+    const distributedCoins = this.fairCoinsDistribution(userIds, coins);
 
     await Promise.all(
-      userIds.map((userId) =>
-        this.coinService.addCoins(userId, distributedCoins)
+      distributedCoins.map(({ userId, coins }) =>
+        this.coinService.addCoins(userId, coins)
       )
     );
+  }
+
+  private fairCoinsDistribution(
+    userIds: string[],
+    coins: number
+  ): { userId: string; coins: number }[] {
+    const usersCopy = [...userIds];
+    const baseCoins = Math.floor(coins / userIds.length);
+
+    const lefthover = coins - baseCoins * userIds.length;
+    const selectedUsers = [];
+
+    for (let index = 0; index < lefthover; index++) {
+      const rand = this.getRandomNumberInRange(1, lefthover - index);
+      selectedUsers.push(userIds[rand]);
+      usersCopy.splice(rand - 1, 1);
+    }
+
+    const baseDistribution = usersCopy.map((userId) => ({
+      userId,
+      coins: baseCoins,
+    }));
+    const extraDistribution = selectedUsers.map((userId) => ({
+      userId,
+      coins: baseCoins + 1,
+    }));
+
+    return [...baseDistribution, ...extraDistribution];
+  }
+
+  private getRandomNumberInRange(min: number, max: number) {
+    return Math.floor(Math.random() * (max - min + 1) + min);
   }
 }
