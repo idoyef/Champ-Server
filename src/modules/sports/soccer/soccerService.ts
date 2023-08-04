@@ -29,6 +29,7 @@ export class SoccerService implements SportService<SoccerMatch> {
     private soccerMatchRepository: SoccerMatchRepository,
     private eventHandler: EventHandler
   ) {
+    // For debugging - after development need to replace with scheduler with config params
     this.getStartedMatches();
     setTimeoutWrapper(
       () =>
@@ -37,7 +38,6 @@ export class SoccerService implements SportService<SoccerMatch> {
         }, 2000),
       20000
     );
-    // initialize scheduler for getting matches from dataProvider
   }
 
   async createMatch(match: Omit<SoccerMatch, 'date'>): Promise<DbSoccerMatch> {
@@ -54,10 +54,6 @@ export class SoccerService implements SportService<SoccerMatch> {
   async findMatchesWithQuery(query: any): Promise<DbSoccerMatch[]> {
     return await this.soccerMatchRepository.findManyWithQuery(query);
   }
-
-  // async findSoccerIdMatchIdMappingWithQuery(query: any) {
-  //   return await this.soccerIdMatchIdMappingRepository.findManyWithQuery(query);
-  // }
 
   async getStartedMatches() {
     // get matches from dataProvider

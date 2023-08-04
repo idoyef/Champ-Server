@@ -14,7 +14,6 @@ import { SoccerMatchRepository } from './modules/sports/soccer/soccerRepository'
 import { SportApiGateway } from './modules/sports/sportApiGateway/sportApiGateway';
 import { MatchChallengesRepository } from './modules/matches/matchChallengeRepository';
 import { ChallengeRepository } from './modules/matches/challengeRepository';
-import { SoccerIdMatchIdMappingRepository } from './modules/sports/soccer/soccerIdMatchIdMappingRepository';
 import { EventHandler } from './common/events/eventHandler';
 import { matchController } from './modules/matches/matchController';
 import { clearIntervals, clearTimeouts } from './utils';
